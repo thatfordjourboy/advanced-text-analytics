@@ -11,7 +11,7 @@ class GloVeEmbeddings:
         self.embeddings = {}
         self.loaded = False
         
-        # File paths - expects 2024 vectors to already be in data directory
+        # File paths - vectors already in data directory
         self.data_dir = Path(__file__).parent.parent.parent / "data"
         
         # call GloVe vectors
@@ -20,7 +20,7 @@ class GloVeEmbeddings:
         elif dimension == 300:
             self.txt_path = self.data_dir / "glove.2024.wikigiga.300d.txt"
         else:
-            # Fallback to 6B if other dimensions needed
+            # Fallback to 6B if other dimensions needed requires download
             self.txt_path = self.data_dir / f"glove.6B.{dimension}d.txt"
     
     def load_embeddings(self):
@@ -58,7 +58,7 @@ class GloVeEmbeddings:
                         continue  # Skip malformed lines
                     
                     word = values[0]
-                    # Handle 2024 format which might have special characters
+                    #  2024 format has special characters
                     if word in [',', '.', '!', '?', ';', ':', '"', "'", '-', '(', ')']:
                         continue  # Skip punctuation-only words
                     

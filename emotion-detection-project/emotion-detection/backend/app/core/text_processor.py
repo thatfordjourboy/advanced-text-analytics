@@ -1,8 +1,3 @@
-"""
-Minimal text processing for emotion detection.
-Basic cleaning only - no stop word removal.
-"""
-
 import re
 import logging
 from typing import List

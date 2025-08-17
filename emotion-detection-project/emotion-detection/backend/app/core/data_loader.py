@@ -17,7 +17,7 @@ class DataLoader:
         # Initialize emotion mapping - will be populated from actual dataset
         self.emotion_mapping = {}
         
-        # Load the dataset first to get actual emotions - no fallbacks
+        # Load the dataset first to get actual emotions
         self._load_and_setup_emotions()
         
     def load_dataset(self, force_reload=False):
@@ -53,7 +53,7 @@ class DataLoader:
             return False
 
 
-    # _load_dataset_via_api method removed - we only use the real ConvLab dataset
+    # _load_dataset
     
     def _load_complete_dataset(self):
         """Load the complete dataset with all three splits from the real ConvLab data."""
@@ -162,8 +162,6 @@ class DataLoader:
             logger.error(f"Failed to load emotions from dataset: {e}")
             raise ValueError("Cannot proceed without loading emotions from ConvLab dataset")
 
-    # _setup_default_emotion_mapping method removed - no fallbacks allowed
-
     def _create_proper_splits(self, df):
         """Create proper train/validation/test splits from the complete dataset."""
         try:
@@ -214,10 +212,6 @@ class DataLoader:
         except Exception as e:
             logger.error(f"Failed to use predefined splits: {e}")
             raise
-
-    # _create_splits_from_combined method removed - we only use predefined splits from ConvLab dataset
-
-        # Helper methods removed - not needed with predefined splits
 
     def get_split_info(self):
         """Get information about all three splits."""

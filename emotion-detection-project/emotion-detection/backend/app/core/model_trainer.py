@@ -18,7 +18,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
-# Removed unused import
+
 from sklearn.metrics import (
     precision_score, recall_score, f1_score, roc_auc_score,
     classification_report, confusion_matrix, accuracy_score
@@ -91,11 +91,6 @@ class MultiLabelEmotionTrainer:
         """
         Prepare training data from the data loader.
         Converts text to GloVe vectors and prepares labels.
-        
-        Args:
-            data_loader: DataLoader instance with loaded dataset
-            embeddings: GloVeEmbeddings instance for text vectorization
-            text_processor: TextProcessor instance for preprocessing
         """
         try:
             logger.info("Preparing training data from data loader...")
@@ -199,7 +194,6 @@ class MultiLabelEmotionTrainer:
         logger.info("Preparing multi-label data...")
         
         # Convert single labels to multi-label format
-        # For now, we'll use single-label but prepare for multi-label expansion
         multi_labels = []
         
         for label in labels:
