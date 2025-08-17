@@ -1,0 +1,51 @@
+{
+  "summary": {
+    "status": "complete",
+    "overall_winner": "random_forest",
+    "f1_difference": 0.1511489404630131,
+    "performance_gap": "significant"
+  },
+  "detailed_comparison": {
+    "precision": {
+      "logistic_regression": 0.23385099043530447,
+      "random_forest": 0.3339560393305067,
+      "difference": -0.10010504889520225,
+      "winner": "random_forest",
+      "percentage_diff": 29.975516866197815
+    },
+    "recall": {
+      "logistic_regression": 0.164475437935608,
+      "random_forest": 0.3148295840990884,
+      "difference": -0.1503541461634804,
+      "winner": "random_forest",
+      "percentage_diff": 47.757311814812944
+    },
+    "f1_score": {
+      "logistic_regression": 0.16863939902599948,
+      "random_forest": 0.3197883394890126,
+      "difference": -0.1511489404630131,
+      "winner": "random_forest",
+      "percentage_diff": 47.26530701667637
+    },
+    "roc_auc": {
+      "logistic_regression": 0.7854178636766525,
+      "random_forest": 0.7910149173779912,
+      "difference": -0.005597053701338783,
+      "winner": "random_forest",
+      "percentage_diff": 0.7075787799162575
+    }
+  },
+  "recommendations": [
+    "Consider using the better performing model for production",
+    "Monitor performance on rare emotion classes",
+    "Consider hyperparameter tuning for further improvement"
+  ],
+  "performance_analysis": {
+    "logistic_regression_strengths": [],
+    "random_forest_strengths": [
+      "Better overall F1-score",
+      "Better ROC-AUC performance"
+    ],
+    "areas_for_improvement": []
+  }
+}
