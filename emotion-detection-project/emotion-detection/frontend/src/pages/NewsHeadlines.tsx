@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Brain, BarChart3, TrendingUp, Clock, 
-  AlertCircle, Loader2, RefreshCw, Download, 
-  Eye, EyeOff, Newspaper, Radio, 
+  Loader2, RefreshCw, Download, 
+  Eye, EyeOff, Radio, 
   Play, Pause, Globe, ChevronRight
 } from 'lucide-react';
 import { apiService } from '../services/api';
@@ -40,8 +40,6 @@ const NewsHeadlines: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<EmotionResult[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [batchMode, setBatchMode] = useState(false);
-  const [batchTexts, setBatchTexts] = useState<string[]>(['']);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentHeadline, setCurrentHeadline] = useState(0);
 

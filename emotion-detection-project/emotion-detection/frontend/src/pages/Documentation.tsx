@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { 
   BookOpen, Users, Code, Database, Brain, 
-  Zap, BarChart3, Settings, FileText, 
-  Github, Linkedin, Mail, Globe, Award
+  Zap, 
+  Github, Linkedin, Mail, Award
 } from 'lucide-react';
 
 interface TeamMember {

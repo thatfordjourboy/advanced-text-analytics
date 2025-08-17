@@ -2,14 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   BarChart3, TrendingUp, Activity, Target, Zap, Brain, 
   Gauge,
-  Download, RefreshCw, Eye, EyeOff, Filter, Search, ArrowRight,
-  CheckCircle, AlertCircle, Clock, Star, TrendingDown, 
-  BarChart, PieChart, Layers, Hash
+  Download, RefreshCw, Layers, Hash
 } from 'lucide-react';
 import { 
   ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, 
-  Tooltip, ReferenceLine, AreaChart, Area, BarChart as RechartsBarChart, Bar, PieChart as RechartsPieChart, Pie, Cell,
-  ScatterChart, Scatter as RechartsScatter, ComposedChart, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
+  Tooltip, ReferenceLine, BarChart as RechartsBarChart, Bar, PieChart as RechartsPieChart, Pie, Cell,
+  ScatterChart, Scatter as RechartsScatter
 } from 'recharts';
 import { apiService } from '../services/api';
 

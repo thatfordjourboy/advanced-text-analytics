@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Play, Square, Settings, Download, Upload, RefreshCw, CheckCircle, 
-  AlertCircle, Clock, Zap, Brain, Target, TrendingUp, Activity,
-  Save, Trash2, Eye, EyeOff, Info, Shield, Crown
+  Play, Square, Settings, RefreshCw, CheckCircle, 
+  AlertCircle, Brain, Target, Activity,
+  Trash2, Eye, Crown
 } from 'lucide-react';
 import { apiService } from '../services/api';
 
@@ -72,7 +72,6 @@ const ModelTraining: React.FC = () => {
   const [selectedModelType, setSelectedModelType] = useState<'logistic_regression' | 'random_forest'>('logistic_regression');
   const [selectedModelMode, setSelectedModelMode] = useState<'default' | 'custom'>('default');
   const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
-  const [activeModel, setActiveModel] = useState<ModelInfo | null>(null);
   
   // Custom parameters state
   const [customParams, setCustomParams] = useState<CustomParameters>({
@@ -182,7 +181,6 @@ const ModelTraining: React.FC = () => {
         }
         
         setAvailableModels(models);
-        setActiveModel(models.find(m => m.is_active) || null);
       }
     } catch (err) {
       console.error('Error fetching models:', err);
@@ -212,7 +210,6 @@ const ModelTraining: React.FC = () => {
         }
       ];
       setAvailableModels(mockModels);
-      setActiveModel(mockModels[0]);
     }
   };
 
@@ -325,7 +322,7 @@ const ModelTraining: React.FC = () => {
   const activateModel = async (model: ModelInfo) => {
     try {
       // In a real implementation, you'd call an endpoint to activate the model
-      setActiveModel(model);
+      setAvailableModels(prev => prev.map(m => ({ ...m, is_active: m.name === model.name })));
       setSuccess(`${model.name} activated successfully!`);
     } catch (err) {
       setError('Error activating model');
@@ -363,9 +360,7 @@ const ModelTraining: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getModelTypeDisplayName = (type: string) => {
-    return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
