@@ -52,58 +52,30 @@ const Analytics: React.FC = () => {
   // Chart data for interactive visualizations
   const rocData = [
     { fpr: 0, tpr: 0 },
-    { fpr: 0.05, tpr: 0.15 },
-    { fpr: 0.1, tpr: 0.35 },
-    { fpr: 0.15, tpr: 0.55 },
-    { fpr: 0.2, tpr: 0.7 },
-    { fpr: 0.25, tpr: 0.8 },
-    { fpr: 0.3, tpr: 0.85 },
-    { fpr: 0.4, tpr: 0.9 },
-    { fpr: 0.5, tpr: 0.92 },
-    { fpr: 0.6, tpr: 0.94 },
-    { fpr: 0.7, tpr: 0.95 },
-    { fpr: 0.8, tpr: 0.96 },
-    { fpr: 0.9, tpr: 0.97 },
     { fpr: 1, tpr: 1 }
   ];
 
   const learningCurveData = [
-    { samples: 100, train_score: 0.85, val_score: 0.82 },
-    { samples: 200, train_score: 0.87, val_score: 0.84 },
-    { samples: 300, train_score: 0.89, val_score: 0.86 },
-    { samples: 400, train_score: 0.91, val_score: 0.88 },
-    { samples: 500, train_score: 0.92, val_score: 0.89 },
-    { samples: 600, train_score: 0.93, val_score: 0.90 },
-    { samples: 700, train_score: 0.94, val_score: 0.91 },
-    { samples: 800, train_score: 0.95, val_score: 0.92 },
-    { samples: 900, train_score: 0.96, val_score: 0.93 },
-    { samples: 1000, train_score: 0.97, val_score: 0.94 }
+    { samples: 0, train_score: 0, val_score: 0 }
   ];
 
   const precisionRecallData = [
-    { threshold: 0.1, precision: 0.75, recall: 0.95 },
-    { threshold: 0.2, precision: 0.82, recall: 0.90 },
-    { threshold: 0.3, precision: 0.87, recall: 0.85 },
-    { threshold: 0.4, precision: 0.90, recall: 0.80 },
-    { threshold: 0.5, precision: 0.92, recall: 0.75 },
-    { threshold: 0.6, precision: 0.94, recall: 0.70 },
-    { threshold: 0.7, precision: 0.96, recall: 0.65 },
-    { threshold: 0.8, precision: 0.98, recall: 0.60 },
-    { threshold: 0.9, precision: 0.99, recall: 0.55 }
+    { threshold: 0, precision: 0, recall: 0 }
   ];
 
-  const getEmotionColor = useCallback((emotion: string) => {
-    const colors: Record<string, string> = {
-      joy: '#ffd700',
-      sadness: '#4facfe',
-      anger: '#fa709a',
-      fear: '#a18cd1',
-      surprise: '#ff9a9e',
-      disgust: '#ffecd2',
-      neutral: '#a8edea'
-    };
-    return colors[emotion] || '#64748b';
-  }, []);
+  const emotionColors = {
+    anger: '#ef4444',
+    disgust: '#10b981',
+    fear: '#8b5cf6',
+    happiness: '#ffd700',
+    'no emotion': '#a8edea',
+    sadness: '#3b82f6',
+    surprise: '#f97316'
+  };
+
+  const getEmotionColor = useCallback((emotion: keyof typeof emotionColors | string) => {
+    return emotionColors[emotion as keyof typeof emotionColors] || '#64748b';
+  }, [emotionColors]);
 
 
 
@@ -515,13 +487,13 @@ const Analytics: React.FC = () => {
             [3, 4, 6, 5, 6, 5, 147]
           ], // Keep mock for now - can be enhanced later
           emotion_distribution: {
-            joy: 0.23,
-            sadness: 0.18,
-            anger: 0.15,
-            fear: 0.12,
-            surprise: 0.14,
-            disgust: 0.08,
-            neutral: 0.10
+            anger: 0.0,
+            disgust: 0.0,
+            fear: 0.0,
+            happiness: 0.0,
+            'no emotion': 0.0,
+            sadness: 0.0,
+            surprise: 0.0
           } // Keep mock for now - can be enhanced later
         });
       } else {
@@ -530,29 +502,29 @@ const Analytics: React.FC = () => {
         setDataSource('fallback');
         setLastUpdated(new Date());
         setModelMetrics({
-          accuracy: 0.89,
-          precision: 0.87,
-          recall: 0.91,
-          f1_score: 0.89,
-          training_time: 45.2,
-          inference_time: 0.23,
+          accuracy: 0.0,
+          precision: 0.0,
+          recall: 0.0,
+          f1_score: 0.0,
+          training_time: 0.0,
+          inference_time: 0.0,
           confusion_matrix: [
-            [156, 12, 8, 4, 6, 3, 2],
-            [15, 142, 9, 7, 5, 4, 3],
-            [8, 11, 158, 6, 8, 5, 4],
-            [5, 8, 7, 151, 9, 6, 5],
-            [6, 5, 8, 9, 153, 7, 6],
-            [4, 6, 5, 7, 8, 149, 5],
-            [3, 4, 6, 5, 6, 5, 147]
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0]
           ],
           emotion_distribution: {
-            joy: 0.23,
-            sadness: 0.18,
-            anger: 0.15,
-            fear: 0.12,
-            surprise: 0.14,
-            disgust: 0.08,
-            neutral: 0.10
+            anger: 0.0,
+            disgust: 0.0,
+            fear: 0.0,
+            happiness: 0.0,
+            'no emotion': 0.0,
+            sadness: 0.0,
+            surprise: 0.0
           }
         });
       }
@@ -562,28 +534,29 @@ const Analytics: React.FC = () => {
       setDataSource('fallback');
       setLastUpdated(new Date());
       setModelMetrics({
-        accuracy: 0.89,
-        precision: 0.87,
-        recall: 0.91,
-        f1_score: 0.89,
-        training_time: 45.2,
-        inference_time: 0.23,
+        accuracy: 0.0,
+        precision: 0.0,
+        recall: 0.0,
+        f1_score: 0.0,
+        training_time: 0.0,
+        inference_time: 0.0,
         confusion_matrix: [
-          [156, 12, 8, 4, 6, 3, 2],
-          [15, 142, 9, 7, 5, 4, 3],
-          [8, 11, 158, 6, 8, 5, 4],
-          [5, 8, 7, 151, 9, 6, 5],
-          [6, 5, 8, 9, 153, 7, 6],
-          [4, 6, 5, 7, 8, 149, 5],
+          [0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0]
         ],
         emotion_distribution: {
-          joy: 0.23,
-          sadness: 0.18,
-          anger: 0.15,
-          fear: 0.12,
-          surprise: 0.14,
-          disgust: 0.08,
-          neutral: 0.10
+          anger: 0.0,
+          disgust: 0.0,
+          fear: 0.0,
+          happiness: 0.0,
+          'no emotion': 0.0,
+          sadness: 0.0,
+          surprise: 0.0
         }
       });
     } finally {
@@ -611,7 +584,7 @@ const Analytics: React.FC = () => {
     }
   }, [modelMetrics, drawROCCurve, drawLearningCurve, activeTab]);
 
-  const emotionLabels = ['Joy', 'Sadness', 'Anger', 'Fear', 'Surprise', 'Disgust', 'Neutral'];
+  const emotionLabels = ['Anger', 'Disgust', 'Fear', 'Happiness', 'No Emotion', 'Sadness', 'Surprise'];
 
   if (loading) {
     return (
@@ -831,7 +804,7 @@ const Analytics: React.FC = () => {
                   <div className="metric-label">Total Analyses</div>
                   <div className="metric-change positive">
                     <TrendingUp className="w-4 h-4" />
-                    <span>+127 this week</span>
+                    <span>No recent data</span>
                   </div>
                 </div>
               </div>
@@ -928,11 +901,38 @@ const Analytics: React.FC = () => {
                 </div>
                 <div className="mt-3 text-sm text-slate-400">
                   {dataSource === 'real' 
-                    ? 'Metrics are fetched in real-time from your trained ML models and system performance data.'
-                    : 'Using cached metrics. Backend connection may be unavailable or models not yet trained.'
+                    ? 'Metrics are fetched in real-time from our trained ML models and system performance data.'
+                    : 'Using cached metrics. Backend connection may be unavailable or models not yet trained. Train new models if unsure'
                   }
                 </div>
               </div>
+
+              {/* Empty State Message */}
+              {(!modelMetrics || Object.values(modelMetrics.emotion_distribution).every(val => val === 0)) && (
+                <div className="mb-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl p-8 border border-blue-500/20 text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BarChart3 className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">No Analytics Data Available</h3>
+                  <p className="text-slate-300 mb-4">
+                    To see analytics and performance metrics, you need to train your emotion detection models first.
+                  </p>
+                  <div className="flex items-center justify-center space-x-4">
+                    <button 
+                      onClick={() => window.location.href = '/model-training'}
+                      className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Go to Model Training
+                    </button>
+                    <button 
+                      onClick={fetchMetrics}
+                      className="px-6 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Refresh Data
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Methodology Section */}
               <div className="chart-container">
@@ -1235,7 +1235,7 @@ const Analytics: React.FC = () => {
                     Unlike traditional single-label classification, our emotion detection system can identify 
                     <strong className="text-white"> multiple emotions</strong> in a single text. For example, 
                     "I'm excited but also nervous about the presentation" would be classified as both 
-                    <span className="text-emerald-400">Joy</span> and <span className="text-blue-400">Fear</span>. 
+                    <span className="text-emerald-400">Happiness</span> and <span className="text-blue-400">Fear</span>. 
                     This approach captures the complexity of human emotions more accurately.
                   </p>
                   <div className="mt-4 p-3 bg-slate-700/50 rounded-lg">
@@ -1299,7 +1299,7 @@ const Analytics: React.FC = () => {
                           <span className="text-emerald-400 font-semibold">
                             {(() => {
                               const emotions = modelMetrics?.emotion_distribution || {};
-                              const dominant = Object.entries(emotions).reduce((a, b) => a[1] > b[1] ? a : b, ['neutral', 0]);
+                              const dominant = Object.entries(emotions).reduce((a, b) => a[1] > b[1] ? a : b, ['no emotion', 0]);
                               return `${dominant[0].charAt(0).toUpperCase() + dominant[0].slice(1)} (${(dominant[1] * 100).toFixed(1)}%)`;
                             })()}
                           </span>
@@ -1307,9 +1307,9 @@ const Analytics: React.FC = () => {
                         <div className="text-sm text-slate-400">
                           {(() => {
                             const emotions = modelMetrics?.emotion_distribution || {};
-                            const dominant = Object.entries(emotions).reduce((a, b) => a[1] > b[1] ? a : b, ['neutral', 0]);
+                            const dominant = Object.entries(emotions).reduce((a, b) => a[1] > b[1] ? a : b, ['no emotion', 0]);
                             const dominantName = dominant[0].charAt(0).toUpperCase() + dominant[0].slice(1);
-                            return `${dominantName} appears most frequently in the analyzed texts, indicating a generally ${dominant[0] === 'joy' || dominant[0] === 'surprise' ? 'positive' : dominant[0] === 'sadness' || dominant[0] === 'fear' || dominant[0] === 'anger' || dominant[0] === 'disgust' ? 'negative' : 'neutral'} sentiment distribution.`;
+                            return `${dominantName} appears most frequently in the analyzed texts, indicating a generally ${dominant[0] === 'happiness' || dominant[0] === 'surprise' ? 'positive' : dominant[0] === 'sadness' || dominant[0] === 'fear' || dominant[0] === 'anger' || dominant[0] === 'disgust' ? 'negative' : 'neutral'} sentiment distribution.`;
                           })()}
                         </div>
                       </div>
@@ -1625,14 +1625,14 @@ const Analytics: React.FC = () => {
                           <RechartsPieChart>
                             <Pie
                               data={[
-                                { name: 'Joy-Sadness', value: -0.85, fill: '#ef4444' },
-                                { name: 'Joy-Anger', value: -0.72, fill: '#f97316' },
-                                { name: 'Joy-Fear', value: -0.68, fill: '#eab308' },
+                                { name: 'Happiness-Sadness', value: -0.85, fill: '#ef4444' },
+                                { name: 'Happiness-Anger', value: -0.72, fill: '#f97316' },
+                                { name: 'Happiness-Fear', value: -0.68, fill: '#eab308' },
                                 { name: 'Sadness-Anger', value: 0.45, fill: '#3b82f6' },
                                 { name: 'Sadness-Fear', value: 0.78, fill: '#8b5cf6' },
                                 { name: 'Anger-Fear', value: 0.62, fill: '#ec4899' },
-                                { name: 'Surprise-Neutral', value: 0.23, fill: '#10b981' },
-                                { name: 'Disgust-Neutral', value: -0.34, fill: '#06b6d4' }
+                                { name: 'Surprise-No Emotion', value: 0.23, fill: '#10b981' },
+                                { name: 'Disgust-No Emotion', value: -0.34, fill: '#06b6d4' }
                               ]}
                               cx="50%"
                               cy="50%"
@@ -1641,14 +1641,14 @@ const Analytics: React.FC = () => {
                               label={({ name, value }) => `${name}: ${value?.toFixed(2) || '0.00'}`}
                             >
                               {[
-                                { name: 'Joy-Sadness', value: -0.85, fill: '#ef4444' },
-                                { name: 'Joy-Anger', value: -0.72, fill: '#f97316' },
-                                { name: 'Joy-Fear', value: -0.68, fill: '#eab308' },
+                                { name: 'Happiness-Sadness', value: -0.85, fill: '#ef4444' },
+                                { name: 'Happiness-Anger', value: -0.72, fill: '#f97316' },
+                                { name: 'Happiness-Fear', value: -0.68, fill: '#eab308' },
                                 { name: 'Sadness-Anger', value: 0.45, fill: '#3b82f6' },
                                 { name: 'Sadness-Fear', value: 0.78, fill: '#8b5cf6' },
                                 { name: 'Anger-Fear', value: 0.62, fill: '#ec4899' },
-                                { name: 'Surprise-Neutral', value: 0.23, fill: '#10b981' },
-                                { name: 'Disgust-Neutral', value: -0.34, fill: '#06b6d4' }
+                                { name: 'Surprise-No Emotion', value: 0.23, fill: '#10b981' },
+                                { name: 'Disgust-No Emotion', value: -0.34, fill: '#06b6d4' }
                               ].map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.fill} />
                               ))}
@@ -1672,7 +1672,7 @@ const Analytics: React.FC = () => {
                       <div className="space-y-4">
                         <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-xl p-4 border border-red-400/30">
                           <div className="text-lg font-bold text-red-400 mb-1">Strong Negative</div>
-                          <div className="text-sm text-red-300">Joy vs Sadness (-0.85)</div>
+                          <div className="text-sm text-red-300">Happiness vs Sadness (-0.85)</div>
                           <div className="text-xs text-slate-400 mt-1">Opposite emotions rarely co-occur</div>
                         </div>
                         <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl p-4 border border-blue-400/30">
@@ -1682,7 +1682,7 @@ const Analytics: React.FC = () => {
                         </div>
                         <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl p-4 border border-green-400/30">
                           <div className="text-lg font-bold text-green-400 mb-1">Weak Correlation</div>
-                          <div className="text-sm text-green-300">Surprise vs Neutral (0.23)</div>
+                          <div className="text-sm text-green-300">Surprise vs No Emotion (0.23)</div>
                           <div className="text-xs text-slate-400 mt-1">Minimal relationship</div>
                         </div>
                       </div>
@@ -1707,8 +1707,8 @@ const Analytics: React.FC = () => {
                         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                         <XAxis 
                           type="number" 
-                          dataKey="joy" 
-                          name="Joy" 
+                          dataKey="happiness" 
+                          name="Happiness" 
                           stroke="#94a3b8"
                           domain={[0, 1]}
                         />
@@ -1729,28 +1729,28 @@ const Analytics: React.FC = () => {
                           cursor={{ strokeDasharray: '3 3' }}
                         />
                         <RechartsScatter 
-                          name="Joy vs Sadness" 
-                          data={[
-                            { joy: 0.9, sadness: 0.1, text: "Very Happy" },
-                            { joy: 0.7, sadness: 0.2, text: "Happy" },
-                            { joy: 0.5, sadness: 0.3, text: "Neutral" },
-                            { joy: 0.3, sadness: 0.6, text: "Sad" },
-                            { joy: 0.1, sadness: 0.9, text: "Very Sad" },
-                            { joy: 0.8, sadness: 0.1, text: "Excited" },
-                            { joy: 0.2, sadness: 0.7, text: "Depressed" },
-                            { joy: 0.4, sadness: 0.4, text: "Mixed" }
-                          ]} 
+                          name="Happiness vs Sadness" 
+                                                      data={[
+                              { happiness: 0.9, sadness: 0.1, text: "Very Happy" },
+                              { happiness: 0.7, sadness: 0.2, text: "Happy" },
+                              { happiness: 0.5, sadness: 0.3, text: "Neutral" },
+                              { happiness: 0.3, sadness: 0.6, text: "Sad" },
+                              { happiness: 0.1, sadness: 0.9, text: "Very Sad" },
+                              { happiness: 0.8, sadness: 0.1, text: "Excited" },
+                              { happiness: 0.2, sadness: 0.7, text: "Depressed" },
+                              { happiness: 0.4, sadness: 0.4, text: "Mixed" }
+                            ]} 
                           fill="#10b981"
                         >
                           {[
-                            { joy: 0.9, sadness: 0.1, text: "Very Happy" },
-                            { joy: 0.7, sadness: 0.2, text: "Happy" },
-                            { joy: 0.5, sadness: 0.3, text: "Neutral" },
-                            { joy: 0.3, sadness: 0.6, text: "Sad" },
-                            { joy: 0.1, sadness: 0.9, text: "Very Sad" },
-                            { joy: 0.8, sadness: 0.1, text: "Excited" },
-                            { joy: 0.2, sadness: 0.7, text: "Depressed" },
-                            { joy: 0.4, sadness: 0.4, text: "Mixed" }
+                            { happiness: 0.9, sadness: 0.1, text: "Very Happy" },
+                            { happiness: 0.7, sadness: 0.2, text: "Happy" },
+                            { happiness: 0.5, sadness: 0.3, text: "Neutral" },
+                            { happiness: 0.3, sadness: 0.6, text: "Sad" },
+                            { happiness: 0.1, sadness: 0.9, text: "Very Sad" },
+                            { happiness: 0.8, sadness: 0.1, text: "Excited" },
+                            { happiness: 0.2, sadness: 0.7, text: "Depressed" },
+                            { happiness: 0.4, sadness: 0.4, text: "Mixed" }
                           ].map((entry, index) => (
                             <Cell key={`cell-${index}`} fill="#10b981" />
                           ))}
@@ -1785,13 +1785,13 @@ const Analytics: React.FC = () => {
                       <label className="block text-sm font-medium text-slate-300 mb-2">Filter by Emotion</label>
                       <select className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
                         <option value="all">All Emotions</option>
-                        <option value="joy">Joy</option>
+                        <option value="happiness">Happiness</option>
                         <option value="sadness">Sadness</option>
                         <option value="anger">Anger</option>
                         <option value="fear">Fear</option>
                         <option value="surprise">Surprise</option>
                         <option value="disgust">Disgust</option>
-                        <option value="neutral">Neutral</option>
+                        <option value="no emotion">No Emotion</option>
                       </select>
                     </div>
                     <div>
@@ -1824,36 +1824,37 @@ const Analytics: React.FC = () => {
                   <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-600/30">
                     <h4 className="text-lg font-semibold text-white mb-4">Top Words by Emotion</h4>
                     <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RechartsBarChart data={[
-                          { word: 'happy', joy: 0.89, sadness: 0.05, anger: 0.02, fear: 0.01, surprise: 0.02, disgust: 0.01, neutral: 0.05 },
-                          { word: 'sad', joy: 0.03, sadness: 0.92, anger: 0.08, fear: 0.15, surprise: 0.02, disgust: 0.01, neutral: 0.12 },
-                          { word: 'angry', joy: 0.01, sadness: 0.12, anger: 0.94, fear: 0.08, surprise: 0.05, disgust: 0.15, neutral: 0.03 },
-                          { word: 'scared', joy: 0.02, sadness: 0.18, anger: 0.05, fear: 0.91, surprise: 0.12, disgust: 0.03, neutral: 0.08 },
-                          { word: 'wow', joy: 0.15, sadness: 0.02, anger: 0.01, fear: 0.08, surprise: 0.89, disgust: 0.02, neutral: 0.12 },
-                          { word: 'disgusting', joy: 0.01, sadness: 0.08, anger: 0.25, fear: 0.05, surprise: 0.03, disgust: 0.95, neutral: 0.02 },
-                          { word: 'okay', joy: 0.12, sadness: 0.08, anger: 0.03, fear: 0.05, surprise: 0.02, disgust: 0.01, neutral: 0.85 }
-                        ]}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                          <XAxis dataKey="word" stroke="#94a3b8" />
-                          <YAxis stroke="#94a3b8" />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: '#1e293b', 
-                              border: '1px solid #475569',
-                              borderRadius: '8px',
-                              color: '#f8fafc'
-                            }}
-                          />
-                          <Bar dataKey="joy" stackId="a" fill="#10b981" />
-                          <Bar dataKey="sadness" stackId="a" fill="#3b82f6" />
-                          <Bar dataKey="anger" stackId="a" fill="#ef4444" />
-                          <Bar dataKey="fear" stackId="a" fill="#8b5cf6" />
-                          <Bar dataKey="surprise" stackId="a" fill="#f59e0b" />
-                          <Bar dataKey="disgust" stackId="a" fill="#eab308" />
-                          <Bar dataKey="neutral" stackId="a" fill="#64748b" />
-                        </RechartsBarChart>
-                      </ResponsiveContainer>
+                      {modelMetrics && Object.values(modelMetrics.emotion_distribution).some(val => val > 0) ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RechartsBarChart data={[]}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                            <XAxis dataKey="word" stroke="#94a3b8" />
+                            <YAxis stroke="#94a3b8" />
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: '#1e293b', 
+                                border: '1px solid #475569',
+                                borderRadius: '8px',
+                                color: '#f8fafc'
+                              }}
+                            />
+                            <Bar dataKey="happiness" stackId="a" fill="#10b981" />
+                            <Bar dataKey="sadness" stackId="a" fill="#3b82f6" />
+                            <Bar dataKey="anger" stackId="a" fill="#ef4444" />
+                            <Bar dataKey="fear" stackId="a" fill="#8b5cf6" />
+                            <Bar dataKey="surprise" stackId="a" fill="#f59e0b" />
+                            <Bar dataKey="disgust" stackId="a" fill="#eab308" />
+                            <Bar dataKey="no emotion" stackId="a" fill="#64748b" />
+                          </RechartsBarChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="h-full flex items-center justify-center">
+                          <div className="text-center text-slate-400">
+                            <p className="text-lg mb-2">No word-emotion data available</p>
+                            <p className="text-sm">Train your models to see word analysis</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -1861,31 +1862,10 @@ const Analytics: React.FC = () => {
                   <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-600/30">
                     <h4 className="text-lg font-semibold text-white mb-4">Interactive Word Cloud</h4>
                     <div className="h-80 flex items-center justify-center">
-                      <div className="grid grid-cols-3 gap-4">
-                        {[
-                          { word: 'Happy', size: 'text-3xl', color: 'text-green-400', emotion: 'joy' },
-                          { word: 'Sad', size: 'text-2xl', color: 'text-blue-400', emotion: 'sadness' },
-                          { word: 'Angry', size: 'text-2xl', color: 'text-red-400', emotion: 'anger' },
-                          { word: 'Scared', size: 'text-xl', color: 'text-purple-400', emotion: 'fear' },
-                          { word: 'Surprised', size: 'text-xl', color: 'text-orange-400', emotion: 'surprise' },
-                          { word: 'Disgusted', size: 'text-lg', color: 'text-yellow-400', emotion: 'disgust' },
-                          { word: 'Neutral', size: 'text-lg', color: 'text-gray-400', emotion: 'neutral' },
-                          { word: 'Excited', size: 'text-2xl', color: 'text-green-300', emotion: 'joy' },
-                          { word: 'Worried', size: 'text-lg', color: 'text-purple-300', emotion: 'fear' }
-                        ].map((item, index) => (
-                          <div
-                            key={index}
-                            className={`${item.size} ${item.color} font-bold cursor-pointer hover:scale-110 transition-transform duration-200 hover:drop-shadow-lg`}
-                            onClick={() => alert(`Selected emotion: ${item.emotion} - Word: ${item.word}`)}
-                            title={`Click to see ${item.emotion} analysis`}
-                          >
-                            {item.word}
-                          </div>
-                        ))}
+                      <div className="text-center text-slate-400">
+                        <p className="text-lg mb-2">No word analysis data available</p>
+                        <p className="text-sm">Train your models to see word-emotion correlations</p>
                       </div>
-                    </div>
-                    <div className="mt-4 text-center">
-                      <p className="text-slate-400 text-sm">Click on words to see detailed emotion analysis</p>
                     </div>
                   </div>
                 </div>
@@ -1895,19 +1875,19 @@ const Analytics: React.FC = () => {
                   <h4 className="text-lg font-semibold text-white mb-4">Statistical Summary</h4>
                   <div className="grid grid-cols-4 gap-6">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-400 mb-1">2,847</div>
+                      <div className="text-2xl font-bold text-blue-400 mb-1">0</div>
                       <div className="text-sm text-slate-400">Unique Words</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-emerald-400 mb-1">15.2</div>
+                      <div className="text-2xl font-bold text-emerald-400 mb-1">0.0</div>
                       <div className="text-sm text-slate-400">Avg Word Length</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-400 mb-1">0.73</div>
+                      <div className="text-2xl font-bold text-purple-400 mb-1">0.00</div>
                       <div className="text-sm text-slate-400">Vocabulary Richness</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-400 mb-1">89.4%</div>
+                      <div className="text-2xl font-bold text-orange-400 mb-1">0.0%</div>
                       <div className="text-sm text-slate-400">Coverage Rate</div>
                     </div>
                   </div>

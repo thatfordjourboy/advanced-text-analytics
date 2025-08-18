@@ -261,11 +261,28 @@ const ModelTraining: React.FC = () => {
 
   const startTraining = async () => {
     try {
-      if (!dataStatus?.status || dataStatus.status !== 'completed') {
-        setError('Data preparation must be completed before training. Please prepare data first.');
+      // Check data status and provide appropriate guidance
+      if (!dataStatus) {
+        setError('Unable to determine data status. Please refresh the page.');
         return;
       }
-
+      
+      if (dataStatus.status === 'not_started') {
+        setError('Data preparation required. Please prepare data first.');
+        return;
+      }
+      
+      if (dataStatus.status === 'in_progress') {
+        setError('Data preparation in progress. Please wait for it to complete.');
+        return;
+      }
+      
+      if (dataStatus.status === 'failed') {
+        setError('Data preparation failed. Please try preparing data again.');
+        return;
+      }
+      
+      // If we reach here, data status is 'completed' - proceed with training
       setIsTraining(true);
       setError(null);
       setSuccess(null);
@@ -394,23 +411,39 @@ const ModelTraining: React.FC = () => {
           <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-600/30 backdrop-blur-xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-white">Data Preparation Status</h2>
-              <button
-                onClick={startDataPreparation}
-                disabled={isPreparingData || dataStatus?.status === 'completed'}
-                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isPreparingData ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    Preparing...
-                  </>
-                ) : (
-                  <>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Prepare Data
-                  </>
-                )}
-              </button>
+              {/* Only show Prepare Data button if data is not ready */}
+              {dataStatus?.status !== 'completed' && (
+                <button
+                  onClick={startDataPreparation}
+                  disabled={isPreparingData || dataStatus?.status === 'in_progress'}
+                  className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isPreparingData ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Preparing...
+                    </>
+                  ) : dataStatus?.status === 'in_progress' ? (
+                    <>
+                      <Activity className="w-4 h-4 mr-2 animate-pulse" />
+                      In Progress...
+                    </>
+                  ) : (
+                    <>
+                      <Settings className="w-4 h-4 mr-2" />
+                      Prepare Data
+                    </>
+                  )}
+                </button>
+              )}
+              
+              {/* Show success message when data is ready */}
+              {dataStatus?.status === 'completed' && (
+                <div className="flex items-center px-4 py-2 bg-emerald-500/20 text-emerald-300 rounded-lg border border-emerald-400/30">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Data Ready for Training
+                </div>
+              )}
             </div>
             
             <div className="grid md:grid-cols-3 gap-6">
@@ -458,6 +491,7 @@ const ModelTraining: React.FC = () => {
                 <p className="text-slate-400 text-sm">
                   {dataStatus?.status === 'completed' ? 'Ready for Training' : 
                    dataStatus?.status === 'in_progress' ? 'Processing...' : 
+                   dataStatus?.status === 'failed' ? 'Failed - Retry Needed' :
                    'Not Ready'}
                 </p>
               </div>
@@ -477,6 +511,26 @@ const ModelTraining: React.FC = () => {
                   <div>
                     <div className="text-2xl font-bold text-purple-400">{dataStatus.test_samples || 0}</div>
                     <div className="text-sm text-slate-400">Test Samples</div>
+                  </div>
+                </div>
+                
+                {/* Helpful guidance message */}
+                <div className="mt-4 p-3 bg-slate-600/30 rounded-lg border border-slate-500/30">
+                  <div className="flex items-start space-x-2">
+                    <div className="w-5 h-5 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-xs">ℹ</span>
+                    </div>
+                    <div className="text-sm text-slate-300">
+                      {dataStatus.status === 'completed' ? (
+                        '✅ Data is ready! You can start training immediately without any additional preparation.'
+                      ) : dataStatus.status === 'in_progress' ? (
+                        '⏳ Data preparation is in progress. This may take a few minutes depending on your dataset size.'
+                      ) : dataStatus.status === 'failed' ? (
+                        '❌ Data preparation failed. Click "Prepare Data" to try again.'
+                      ) : (
+                        '📋 Data preparation is required before training. Click "Prepare Data" to get started.'
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -677,10 +731,15 @@ const ModelTraining: React.FC = () => {
                     <Activity className="w-4 h-4 mr-2 animate-pulse" />
                     Training in Progress...
                   </>
-                ) : (
+                ) : dataStatus?.status === 'completed' ? (
                   <>
                     <Play className="w-4 h-4 mr-2" />
                     Start Training
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="w-4 h-4 mr-2" />
+                    Data Not Ready
                   </>
                 )}
               </button>

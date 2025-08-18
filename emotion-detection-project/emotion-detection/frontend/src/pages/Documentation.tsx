@@ -132,7 +132,7 @@ const Documentation: React.FC = () => {
               </h2>
               <p className="text-slate-300 text-lg mb-6">
                 Our emotion detection API provides real-time analysis of text content using advanced machine learning models.
-                Built with FastAPI and powered by GloVe embeddings, it delivers accurate multi-label emotion classification.
+                Built with FastAPI and powered by GloVe embeddings, it delivers accurate 7-class emotion classification.
               </p>
               
               <div className="grid md:grid-cols-2 gap-6">
@@ -154,6 +154,14 @@ const Documentation: React.FC = () => {
                       <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
                       <span><code className="bg-slate-600 px-2 py-1 rounded">POST /api/models/train/*</code></span>
                     </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                      <span><code className="bg-slate-600 px-2 py-1 rounded">GET /api/models/data/status</code></span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
+                      <span><code className="bg-slate-600 px-2 py-1 rounded">GET /api/models/status/comprehensive</code></span>
+                    </li>
                   </ul>
                 </div>
                 
@@ -165,11 +173,11 @@ const Documentation: React.FC = () => {
                   <ul className="space-y-3 text-slate-300">
                     <li className="flex items-center space-x-2">
                       <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
-                      <span>Logistic Regression (Default)</span>
+                      <span>Logistic Regression (Accuracy: 88%)</span>
                     </li>
                     <li className="flex items-center space-x-2">
                       <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
-                      <span>Random Forest (Advanced)</span>
+                      <span>Random Forest (Accuracy: 82%)</span>
                     </li>
                     <li className="flex items-center space-x-2">
                       <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
@@ -180,25 +188,287 @@ const Documentation: React.FC = () => {
               </div>
             </div>
 
+            {/* Emotion Classes */}
+            <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-600/30 backdrop-blur-xl">
+              <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
+                <Brain className="w-8 h-8 mr-3 text-emerald-400" />
+                Emotion Classes
+              </h2>
+              <p className="text-slate-300 text-lg mb-6">
+                Our system detects 7 distinct emotion categories, providing comprehensive emotional analysis of text content.
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/30">
+                    <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+                    <span className="text-white font-medium">Anger</span>
+                    <span className="text-slate-400 text-sm">Hostility, irritation, frustration</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/30">
+                    <div className="w-4 h-4 bg-orange-500 rounded-full"></div>
+                    <span className="text-white font-medium">Disgust</span>
+                    <span className="text-slate-400 text-sm">Revulsion, aversion, contempt</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/30">
+                    <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
+                    <span className="text-white font-medium">Fear</span>
+                    <span className="text-slate-400 text-sm">Anxiety, worry, apprehension</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/30">
+                    <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
+                    <span className="text-white font-medium">Happiness</span>
+                    <span className="text-slate-400 text-sm">Joy, excitement, contentment</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/30">
+                    <div className="w-4 h-4 bg-gray-500 rounded-full"></div>
+                    <span className="text-white font-medium">No Emotion</span>
+                    <span className="text-slate-400 text-sm">Neutral, indifferent, factual</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/30">
+                    <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                    <span className="text-white font-medium">Sadness</span>
+                    <span className="text-slate-400 text-sm">Sorrow, melancholy, grief</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600/30">
+                    <div className="w-4 h-4 bg-pink-500 rounded-full"></div>
+                    <span className="text-white font-medium">Surprise</span>
+                    <span className="text-slate-400 text-sm">Amazement, astonishment, shock</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Model Training */}
+            <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-600/30 backdrop-blur-xl">
+              <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
+                <Zap className="w-8 h-8 mr-3 text-yellow-400" />
+                Model Training
+              </h2>
+              <p className="text-slate-300 text-lg mb-6">
+                Train custom models with our intelligent training system that automatically detects data readiness and optimizes hyperparameters.
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                    <Brain className="w-6 h-6 mr-2 text-emerald-400" />
+                    Smart Data Detection
+                  </h3>
+                  <ul className="space-y-3 text-slate-300">
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span>Automatic data readiness detection</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span>87,170 training samples available</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span>Pre-defined train/validation/test splits</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span>GloVe embeddings (100-dimensional)</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                    <Database className="w-6 h-6 mr-2 text-purple-400" />
+                    Training Features
+                  </h3>
+                  <ul className="space-y-3 text-slate-300">
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span>Hyperparameter optimization</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span>Real-time progress monitoring</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span>Cross-validation evaluation</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span>Model comparison and analysis</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Technical Specifications */}
+            <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-600/30 backdrop-blur-xl">
+              <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
+                <Database className="w-8 h-8 mr-3 text-purple-400" />
+                Technical Specifications
+              </h2>
+              <p className="text-slate-300 text-lg mb-6">
+                Detailed technical information about our emotion detection system architecture, dataset, and performance metrics.
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                    <Brain className="w-6 h-6 mr-2 text-emerald-400" />
+                    System Architecture
+                  </h3>
+                  <ul className="space-y-3 text-slate-300">
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>Backend:</strong> FastAPI + Python 3.11</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>Frontend:</strong> React + TypeScript + Tailwind CSS</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>ML Framework:</strong> Scikit-learn 1.7.1</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>Embeddings:</strong> GloVe 100-dimensional vectors</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                    <Database className="w-6 h-6 mr-2 text-purple-400" />
+                    Dataset Information
+                  </h3>
+                  <ul className="space-y-3 text-slate-300">
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>Source:</strong> ConvLab Daily Dialog Dataset</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>Total Utterances:</strong> 102,979</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>Training:</strong> 87,170 samples</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>Validation:</strong> 8,069 samples</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>Test:</strong> 7,740 samples</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="mt-6 bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+                <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                  <Zap className="w-6 h-6 mr-2 text-yellow-400" />
+                  Performance Metrics
+                </h3>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl font-bold text-emerald-400">88%</span>
+                    </div>
+                    <h4 className="text-lg font-semibold text-white mb-2">Logistic Regression</h4>
+                    <p className="text-slate-400 text-sm">Best overall accuracy</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl font-bold text-purple-400">82%</span>
+                    </div>
+                    <h4 className="text-lg font-semibold text-white mb-2">Random Forest</h4>
+                    <p className="text-slate-400 text-sm">Balanced performance</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl font-bold text-orange-400">7</span>
+                    </div>
+                    <h4 className="text-lg font-semibold text-white mb-2">Emotion Classes</h4>
+                    <p className="text-slate-400 text-sm">Comprehensive coverage</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Quick Start Guide */}
             <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-600/30 backdrop-blur-xl">
               <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
                 <Zap className="w-8 h-8 mr-3 text-yellow-400" />
                 Quick Start Guide
               </h2>
-              <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-600/30">
-                <h3 className="text-xl font-semibold text-white mb-4">Basic Usage</h3>
-                <pre className="bg-slate-800 p-4 rounded-lg overflow-x-auto text-sm text-slate-300">
+              
+              <div className="space-y-6">
+                <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-600/30">
+                  <h3 className="text-xl font-semibold text-white mb-4">Basic Emotion Detection</h3>
+                  <pre className="bg-slate-800 p-4 rounded-lg overflow-x-auto text-sm text-slate-300">
 {`curl -X POST "http://localhost:8000/api/detect-emotion" \\
   -H "Content-Type: application/json" \\
   -d '{
     "text": "I'm so excited about this amazing news!",
     "model_preference": "auto"
   }'`}
-                </pre>
-                <p className="text-slate-400 text-sm mt-3">
-                  This will return emotion scores for joy, sadness, anger, fear, surprise, disgust, and neutral.
-                </p>
+                  </pre>
+                  <p className="text-slate-400 text-sm mt-3">
+                    This will return emotion scores for all 7 emotion classes with confidence levels.
+                  </p>
+                </div>
+                
+                <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-600/30">
+                  <h3 className="text-xl font-semibold text-white mb-4">Response Format</h3>
+                  <pre className="bg-slate-800 p-4 rounded-lg overflow-x-auto text-sm text-slate-300">
+{`{
+  "text": "I'm so excited about this amazing news!",
+  "emotions": {
+    "anger": 0.034,
+    "disgust": 0.059,
+    "fear": 0.021,
+    "happiness": 0.377,
+    "no emotion": 0.308,
+    "sadness": 0.126,
+    "surprise": 0.074
+  },
+  "primary_emotion": "happiness",
+  "confidence": 0.377,
+  "processing_time": 0.072,
+  "model_used": "random_forest"
+}`}
+                  </pre>
+                  <p className="text-slate-400 text-sm mt-3">
+                    Each emotion gets a probability score between 0 and 1, with the highest score being the primary emotion.
+                  </p>
+                </div>
+                
+                <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-600/30">
+                  <h3 className="text-xl font-semibold text-white mb-4">Model Training</h3>
+                  <pre className="bg-slate-800 p-4 rounded-lg overflow-x-auto text-sm text-slate-300">
+{`# Check data status
+GET /api/models/data/status
+
+# Train Logistic Regression
+POST /api/models/train/logistic_regression
+
+# Train Random Forest
+POST /api/models/train/random_forest
+
+# Monitor training progress
+GET /api/models/training/progress`}
+                  </pre>
+                  <p className="text-slate-400 text-sm mt-3">
+                    The system automatically detects when data is ready and allows immediate training without manual preparation.
+                  </p>
+                </div>
               </div>
             </div>
           </div>

@@ -134,22 +134,19 @@ class DataLoader:
                 logger.error("Dialogues file not found")
                 raise ValueError("Cannot proceed without ConvLab dataset")
             
-            # Load a sample to get emotions
+            # Load ALL data to get complete emotion coverage
             with open(dialogues_path, 'r', encoding='utf-8') as f:
-                # Read just the first few lines to get emotion samples
-                sample_data = []
-                for i, line in enumerate(f):
-                    if i >= 1000:  # Read first 1000 lines to get good emotion coverage
-                        break
-                    if line.strip() and line.strip() != '[' and line.strip() != ']':
-                        sample_data.append(line.strip().rstrip(','))
+                # Read the entire file to get all emotions
+                data = json.load(f)
                 
-                # Parse the sample data
+                # Extract all emotions from all dialogues
                 emotions_found = set()
-                for line in sample_data:
-                    if '"emotion":' in line:
-                        emotion_match = line.split('"emotion": "')[1].split('"')[0]
-                        emotions_found.add(emotion_match)
+                for dialogue in data:
+                    turns = dialogue.get('turns', [])
+                    for turn in turns:
+                        emotion = turn.get('emotion', '')
+                        if emotion:
+                            emotions_found.add(emotion)
             
             # Create emotion mapping from actual dataset
             emotions_list = sorted(list(emotions_found))

@@ -11,12 +11,13 @@ const Home: React.FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const emotions = [
-    { name: 'Joy', color: 'from-yellow-400 to-orange-500', emoji: '😊', wave: 'rgba(255, 215, 0, 0.3)' },
+    { name: 'Happiness', color: 'from-yellow-400 to-orange-500', emoji: '😊', wave: 'rgba(255, 215, 0, 0.3)' },
     { name: 'Sadness', color: 'from-blue-400 to-indigo-500', emoji: '😢', wave: 'rgba(79, 172, 254, 0.3)' },
     { name: 'Anger', color: 'from-red-400 to-pink-500', emoji: '😠', wave: 'rgba(250, 112, 154, 0.3)' },
     { name: 'Fear', color: 'from-purple-400 to-indigo-500', emoji: '😨', wave: 'rgba(161, 140, 209, 0.3)' },
     { name: 'Surprise', color: 'from-orange-400 to-red-500', emoji: '😲', wave: 'rgba(255, 154, 158, 0.3)' },
-    { name: 'Disgust', color: 'from-emerald-400 to-teal-500', emoji: '🤢', wave: 'rgba(255, 236, 210, 0.3)' }
+    { name: 'Disgust', color: 'from-emerald-400 to-teal-500', emoji: '🤢', wave: 'rgba(255, 236, 210, 0.3)' },
+    { name: 'No Emotion', color: 'from-gray-400 to-slate-500', emoji: '😐', wave: 'rgba(156, 163, 175, 0.3)' }
   ];
 
   useEffect(() => {

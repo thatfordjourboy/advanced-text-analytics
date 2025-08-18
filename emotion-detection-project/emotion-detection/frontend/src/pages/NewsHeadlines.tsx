@@ -10,13 +10,13 @@ import { apiService } from '../services/api';
 interface EmotionResult {
   text: string;
   emotions: {
-    joy: number;
-    sadness: number;
     anger: number;
-    fear: number;
-    surprise: number;
     disgust: number;
-    neutral: number;
+    fear: number;
+    happiness: number;
+    'no emotion': number;
+    sadness: number;
+    surprise: number;
   };
   model_used: string;
   confidence: number;
@@ -43,7 +43,7 @@ const NewsHeadlines: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentHeadline, setCurrentHeadline] = useState(0);
 
-  // Sample headlines for quick start
+  // Sample headlines for quick start - updated with correct emotion names
   const sampleHeadlines: SampleHeadline[] = [
     {
       id: 1,
@@ -51,7 +51,7 @@ const NewsHeadlines: React.FC = () => {
       category: "Business",
       source: "Financial Times",
       timestamp: "2 hours ago",
-      emotion_hint: "joy, surprise"
+      emotion_hint: "happiness, surprise"
     },
     {
       id: 2,
@@ -104,7 +104,7 @@ const NewsHeadlines: React.FC = () => {
         confidence: data.confidence || 0.85,
         processing_time: data.processing_time || 0.5,
         timestamp: new Date().toISOString(),
-        primary_emotion: data.primary_emotion || 'neutral'
+        primary_emotion: data.primary_emotion || 'no emotion'
       };
 
       // Add to results
@@ -128,7 +128,7 @@ const NewsHeadlines: React.FC = () => {
           News Emotion Analysis
         </h1>
         <p className="text-xl text-slate-300 text-center mb-12">
-          Advanced AI-powered emotion detection for news content
+          Advanced AI-powered 7-class emotion detection for news content
         </p>
         
         {/* Live News Ticker */}
@@ -209,15 +209,15 @@ const NewsHeadlines: React.FC = () => {
                     {
                       name: 'logistic_regression',
                       description: 'Fast and efficient for straightforward text analysis',
-                      accuracy: 0.87,
-                      training_samples: 15000,
+                      accuracy: 0.88,
+                      training_samples: 87170,
                       status: 'default'
                     },
                     {
                       name: 'random_forest',
                       description: 'Robust and accurate for complex emotional content',
-                      accuracy: 0.91,
-                      training_samples: 15000,
+                      accuracy: 0.82,
+                      training_samples: 87170,
                       status: 'default'
                     }
                   ].map((model) => (
@@ -469,7 +469,7 @@ const NewsHeadlines: React.FC = () => {
             </h3>
             <p className="text-slate-300 max-w-md mx-auto">
               Enter your text above or click on any headline from the live ticker to start analyzing emotions. 
-              Our advanced ML models will provide comprehensive multi-label classification results.
+              Our advanced ML models will provide comprehensive 7-class emotion classification: anger, disgust, fear, happiness, no emotion, sadness, and surprise.
             </p>
           </div>
         )}

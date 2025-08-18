@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import time
 from datetime import datetime
 from typing import Dict, Any, List
 
@@ -8,6 +9,7 @@ from typing import Dict, Any, List
 from app.core.text_processor import TextProcessor
 from app.core.embeddings import GloVeEmbeddings
 from app.core.model_trainer import MultiLabelEmotionTrainer
+from app.core.data_loader import DataLoader
 from app.models.schemas import TextInput, EmotionPrediction, SystemStatus, HealthResponse
 from pathlib import Path
 
@@ -36,6 +38,36 @@ text_processor = TextProcessor()
 embeddings = GloVeEmbeddings(dimension=100)
 models_dir = Path(__file__).parent.parent / "models"
 model_trainer = MultiLabelEmotionTrainer(models_dir)
+data_loader = DataLoader()
+
+# Load trained models
+import joblib
+import os
+
+def load_trained_models():
+    """Load the trained models for emotion detection."""
+    models = {}
+    try:
+        # Load Random Forest model
+        rf_path = models_dir / "random_forest.pkl"
+        if rf_path.exists():
+            models['random_forest'] = joblib.load(rf_path)
+            logger.info("✅ Random Forest model loaded successfully")
+        
+        # Load Logistic Regression model
+        lr_path = models_dir / "logistic_regression.pkl"
+        if lr_path.exists():
+            models['logistic_regression'] = joblib.load(lr_path)
+            logger.info("✅ Logistic Regression model loaded successfully")
+        
+        logger.info(f"✅ Loaded {len(models)} trained models")
+        return models
+    except Exception as e:
+        logger.error(f"❌ Failed to load models: {e}")
+        return {}
+
+# Load models on startup
+trained_models = {}
 
 @app.on_event("startup")
 async def startup_event():
@@ -45,9 +77,17 @@ async def startup_event():
         embeddings.load_embeddings()
         logger.info("✅ GloVe embeddings loaded successfully")
         
+        logger.info("Loading dataset...")
+        data_loader.load_dataset()
+        logger.info("✅ Dataset loaded successfully")
+        
         logger.info("Initializing model trainer...")
         # Model trainer will load existing models if available
         logger.info("✅ Model trainer initialized")
+        
+        # Load trained models
+        global trained_models
+        trained_models = load_trained_models()
         
     except Exception as e:
         logger.error(f"❌ Startup failed: {e}")
@@ -76,27 +116,67 @@ async def health_check():
 async def predict_emotion(request: TextInput):
     """Predict emotion from text"""
     try:
+        if not trained_models:
+            raise HTTPException(status_code=503, detail="No trained models available")
+        
         # Process the text
         processed_text = text_processor.process_text(request.text)
         
         # Get embeddings
         text_vector = embeddings.get_text_vector(processed_text)
         
-        # Make prediction (this would use your trained models)
-        # For now, return a placeholder response
-        emotions = {
-            "joy": 0.8,
-            "excitement": 0.6,
-            "satisfaction": 0.4
-        }
+        if text_vector is None:
+            raise HTTPException(status_code=400, detail="Failed to generate text embeddings")
+        
+        # Reshape for sklearn models (expects 2D array)
+        text_vector = text_vector.reshape(1, -1)
+        
+        # Determine which model to use
+        model_name = request.model_preference
+        if model_name == "auto":
+            # Use Random Forest if available, otherwise Logistic Regression
+            model_name = "random_forest" if "random_forest" in trained_models else "logistic_regression"
+        elif model_name not in trained_models:
+            raise HTTPException(status_code=400, detail=f"Model {model_name} not available")
+        
+        # Make prediction using the selected model
+        model = trained_models[model_name]
+        start_time = time.time()
+        
+        # Get prediction probabilities
+        probabilities = model.predict_proba(text_vector)[0]
+        
+        # Get predicted class
+        predicted_class = model.predict(text_vector)[0]
+        
+        processing_time = time.time() - start_time
+        
+        # Get emotion labels from the data loader
+        # Now we have all 7 emotions: anger, disgust, fear, happiness, no emotion, sadness, surprise
+        emotion_labels = data_loader.emotion_categories
+        if not emotion_labels:
+            # Fallback emotion labels if not available
+            emotion_labels = ["anger", "disgust", "fear", "happiness", "no emotion", "sadness", "surprise"]
+        
+        # Create emotions dictionary
+        emotions = {}
+        for i, label in enumerate(emotion_labels):
+            if i < len(probabilities):
+                emotions[label] = float(probabilities[i])
+        
+        # Get primary emotion
+        primary_emotion = emotion_labels[predicted_class] if predicted_class < len(emotion_labels) else "neutral"
+        
+        # Get confidence (max probability)
+        confidence = float(max(probabilities)) if probabilities.size > 0 else 0.0
         
         return EmotionPrediction(
             text=request.text,
             emotions=emotions,
-            primary_emotion="joy",
-            confidence=0.8,
-            processing_time=0.1,
-            model_used="placeholder"
+            primary_emotion=primary_emotion,
+            confidence=confidence,
+            processing_time=processing_time,
+            model_used=model_name
         )
         
     except Exception as e:
@@ -154,15 +234,38 @@ async def get_training_progress():
 async def get_data_status():
     """Get data preparation status"""
     try:
+        # Check actual data readiness based on loaded components
+        data_ready = (
+            hasattr(data_loader, 'dataset_loaded') and 
+            data_loader.dataset_loaded and 
+            hasattr(embeddings, 'loaded') and 
+            embeddings.loaded and 
+            hasattr(data_loader, 'emotion_categories') and 
+            len(data_loader.emotion_categories) > 0
+        )
+        
+        # Get actual sample counts if data is loaded
+        training_samples = 0
+        validation_samples = 0
+        test_samples = 0
+        
+        if hasattr(data_loader, 'train_data') and data_loader.train_data is not None:
+            training_samples = len(data_loader.train_data)
+        if hasattr(data_loader, 'val_data') and data_loader.val_data is not None:
+            validation_samples = len(data_loader.val_data)
+        if hasattr(data_loader, 'test_data') and data_loader.test_data is not None:
+            test_samples = len(data_loader.test_data)
+        
         return {
             "data_status": {
-                "status": "completed" if embeddings.loaded else "not_started",
-                "message": "Data ready" if embeddings.loaded else "Data not loaded",
-                "training_samples": 1000,
-                "validation_samples": 200,
-                "test_samples": 100,
+                "status": "completed" if data_ready else "not_started",
+                "message": "Data ready for training" if data_ready else "Data not loaded",
+                "training_samples": training_samples,
+                "validation_samples": validation_samples,
+                "test_samples": test_samples,
                 "embeddings_loaded": embeddings.loaded,
-                "text_processor_ready": True
+                "text_processor_ready": True,
+                "emotion_classes": len(data_loader.emotion_categories) if hasattr(data_loader, 'emotion_categories') else 0
             }
         }
     except Exception as e:
@@ -199,14 +302,33 @@ async def get_model_status_api():
 async def get_comprehensive_model_status():
     """Get comprehensive model status"""
     try:
+        # Check actual data readiness
+        data_ready = (
+            hasattr(data_loader, 'dataset_loaded') and 
+            data_loader.dataset_loaded and 
+            hasattr(embeddings, 'loaded') and 
+            embeddings.loaded and 
+            hasattr(data_loader, 'emotion_categories') and 
+            len(data_loader.emotion_categories) > 0
+        )
+        
+        # Check actual model availability
+        models_available = {
+            "logistic_regression": hasattr(model_trainer, 'logistic_regression_model') and model_trainer.logistic_regression_model is not None,
+            "random_forest": hasattr(model_trainer, 'random_forest_model') and model_trainer.random_forest_model is not None
+        }
+        
         return {
-            "models_available": {
-                "logistic_regression": True,
-                "random_forest": True
-            },
-            "models_loaded": True,
-            "dataset_loaded": True,
-            "embeddings_loaded": embeddings.loaded
+            "models_available": models_available,
+            "models_loaded": any(models_available.values()),
+            "dataset_loaded": data_ready,
+            "embeddings_loaded": embeddings.loaded,
+            "emotion_classes_count": len(data_loader.emotion_categories) if hasattr(data_loader, 'emotion_categories') else 0,
+            "total_samples": (
+                (len(data_loader.train_data) if hasattr(data_loader, 'train_data') and data_loader.train_data is not None else 0) +
+                (len(data_loader.val_data) if hasattr(data_loader, 'val_data') and data_loader.val_data is not None else 0) +
+                (len(data_loader.test_data) if hasattr(data_loader, 'test_data') and data_loader.test_data is not None else 0)
+            )
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get comprehensive model status: {str(e)}")
