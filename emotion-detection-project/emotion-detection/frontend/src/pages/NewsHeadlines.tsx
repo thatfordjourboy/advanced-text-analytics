@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Brain, Loader2, TrendingUp, BarChart3, Clock, Download, RefreshCw, Zap,
   Newspaper, Globe, Activity, AlertCircle, CheckCircle, Settings, Play, Eye,
-  Radio, Pause, ChevronRight, EyeOff, List, X
+  Radio, Pause, ChevronRight, EyeOff, List, X, FileText
 } from 'lucide-react';
 import { apiService } from '../services/api';
 
@@ -71,6 +71,13 @@ const NewsHeadlines: React.FC = () => {
   const [exportFormats, setExportFormats] = useState<any[]>([]);
   const [isExporting, setIsExporting] = useState(false);
   const [selectedExportFormat, setSelectedExportFormat] = useState('json');
+  
+  // Advanced features state
+  const [confidenceThreshold, setConfidenceThreshold] = useState(50);
+  const [compareModels, setCompareModels] = useState(false);
+  const [removePunctuation, setRemovePunctuation] = useState(false);
+  const [removeNumbers, setRemoveNumbers] = useState(false);
+  const [removeStopWords, setRemoveStopWords] = useState(false);
 
   // Type guards for result types
   const isMultilineResult = (result: EmotionResult | MultilineEmotionResult): result is MultilineEmotionResult => {
@@ -321,6 +328,76 @@ const NewsHeadlines: React.FC = () => {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  // Export functions for advanced features
+  const handleExportCSV = () => {
+    if (results.length === 0) return;
+    
+    const csvContent = results.map(result => {
+      if (isMultilineResult(result)) {
+        return {
+          text: result.text,
+          overall_primary_emotion: result.overall_primary_emotion,
+          overall_confidence: result.overall_confidence,
+          total_paragraphs: result.total_paragraphs,
+          processing_time: result.processing_time,
+          model_used: result.model_used,
+          analysis_type: result.analysis_type,
+          timestamp: result.timestamp
+        };
+      } else {
+        return {
+          text: result.text,
+          primary_emotion: result.primary_emotion,
+          confidence: result.confidence,
+          processing_time: result.processing_time,
+          model_used: result.model_used,
+          timestamp: result.timestamp
+        };
+      }
+    });
+    
+    const csv = convertToCSV(csvContent);
+    downloadFile(csv, 'emotion_analysis_results.csv', 'text/csv');
+  };
+
+  const handleExportJSON = () => {
+    if (results.length === 0) return;
+    
+    const jsonContent = JSON.stringify(results, null, 2);
+    downloadFile(jsonContent, 'emotion_analysis_results.json', 'application/json');
+  };
+
+  const convertToCSV = (data: any[]): string => {
+    if (data.length === 0) return '';
+    
+    const headers = Object.keys(data[0]);
+    const csvRows = [headers.join(',')];
+    
+    for (const row of data) {
+      const values = headers.map(header => {
+        const value = row[header];
+        // Escape quotes and wrap in quotes if contains comma or newline
+        const escaped = String(value).replace(/"/g, '""');
+        return `"${escaped}"`;
+      });
+      csvRows.push(values.join(','));
+    }
+    
+    return csvRows.join('\n');
+  };
+
+  const downloadFile = (content: string, filename: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // Helper function to get color based on emotion
@@ -684,6 +761,132 @@ const NewsHeadlines: React.FC = () => {
                   </>
                 )}
               </button>
+
+              {/* Advanced Options Section */}
+              {showAdvanced && (
+                <div className="mt-6 p-6 bg-slate-800/50 rounded-xl border border-slate-600/30">
+                  <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+                    <Settings className="w-5 h-5 mr-2 text-blue-400" />
+                    Advanced Analysis Options
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Confidence Threshold */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                        Confidence Threshold: {confidenceThreshold}%
+                      </label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={confidenceThreshold}
+                        onChange={(e) => setConfidenceThreshold(parseInt(e.target.value))}
+                        className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer slider"
+                      />
+                      <div className="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-2">
+                        Only show emotions above this confidence level
+                      </p>
+                    </div>
+
+                    {/* Model Comparison Toggle */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-3">
+                        Model Comparison
+                      </label>
+                      <div className="flex items-center space-x-3">
+                        <span className={`text-sm transition-colors ${!compareModels ? 'text-slate-400' : 'text-blue-400'}`}>
+                          Single Model
+                        </span>
+                        <button
+                          onClick={() => setCompareModels(!compareModels)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                            compareModels ? 'bg-blue-600' : 'bg-slate-600'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              compareModels ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                        <span className={`text-sm transition-colors ${compareModels ? 'text-blue-400' : 'text-slate-400'}`}>
+                          Both Models
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-2">
+                        Compare predictions from both ML models
+                      </p>
+                    </div>
+
+                    {/* Text Preprocessing Options */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-3">
+                        Text Preprocessing
+                      </label>
+                      <div className="space-y-2">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={removePunctuation}
+                            onChange={(e) => setRemovePunctuation(e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
+                          />
+                          <span className="text-sm text-slate-300">Remove punctuation</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={removeNumbers}
+                            onChange={(e) => setRemoveNumbers(e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
+                          />
+                          <span className="text-sm text-slate-300">Remove numbers</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={removeStopWords}
+                            onChange={(e) => setRemoveStopWords(e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500"
+                          />
+                          <span className="text-sm text-slate-300">Remove stop words</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Export Options */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-3">
+                        Export Options
+                      </label>
+                      <div className="space-y-2">
+                        <button
+                          onClick={handleExportCSV}
+                          disabled={results.length === 0}
+                          className="w-full flex items-center justify-center px-3 py-2 bg-emerald-600/20 text-emerald-300 rounded-lg font-medium hover:bg-emerald-600/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-500/30 text-sm"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Export as CSV
+                        </button>
+                        <button
+                          onClick={handleExportJSON}
+                          disabled={results.length === 0}
+                          className="w-full flex items-center justify-center px-3 py-2 bg-blue-600/20 text-blue-300 rounded-lg font-medium hover:bg-blue-600/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-blue-500/30 text-sm"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Export as JSON
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

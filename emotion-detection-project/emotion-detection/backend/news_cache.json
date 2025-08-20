@@ -1,6 +1,17 @@
 {
   "articles": [
     {
+      "id": "2e68b02bed46be00295e2f2b26656837",
+      "title": "Mercury Systems Inc $MRCY Shares Sold by Charles Schwab Investment Management Inc.",
+      "description": "Charles Schwab Investment Management Inc. decreased its holdings in shares of Mercury Systems Inc (NASDAQ:MRCY – Free Report) by 0.1% in the 1st quarter, according to its most recent Form 13F filing with the SEC. The firm owned 672,368 shares of the technology company’s stock after selling 856 shares during the period. Charles Schwab Investment [...]",
+      "category": "Business",
+      "source": "defenseworld",
+      "timestamp": "2025-08-20 07:35:00",
+      "url": "https://www.defenseworld.net/2025/08/20/mercury-systems-inc-mrcy-shares-sold-by-charles-schwab-investment-management-inc.html",
+      "image": "https://www.americanbankingnews.com/wp-content/timthumb/timthumb.php?h=240&src=https%3A%2F%2Fwww.marketbeat.com%2Flogos%2Fmercury-systems-inc-logo-1200x675.png%3Fv%3D20240515085439&w=240&zc=2",
+      "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS"
+    },
+    {
       "id": "fallback_2",
       "title": "Heartbreaking: Local community devastated by natural disaster, rescue efforts continue around the clock",
       "description": "Emergency services working tirelessly to help affected families. Community rallies together to provide support and aid. Red Cross volunteers arrive on scene.",
@@ -12,58 +23,25 @@
       "sentiment": "negative"
     },
     {
-      "id": "d5b5145d3868f8d4a6ecf9a73a111fae",
-      "title": "LA City Council discusses how to deal with ICE raids and support immigrant communities",
-      "description": "One proposal the city council is considering requires LAPD to verify the identity of masked agents. They're also considering support for small businesses and eviction prevention.",
-      "category": "Politics",
-      "source": "abc7",
-      "timestamp": "2025-08-20 03:05:56",
-      "url": "https://abc7.com/post/los-angeles-city-council-discusses-how-deal-ice-raids-support-immigrant-communities/17590437/",
-      "image": "https://cdn.abcotvs.com/dip/images/17591608_081925-kabc-unconstitutional-abductions-tn-img.jpg?w=1600",
-      "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS"
-    },
-    {
-      "id": "cd83e29430760df3fd2f0c981df387d8",
-      "title": "Data Science Jobs: 9 Myths Debunked",
-      "description": "Debunk 9 common myths about data science jobs, from skills and salaries to AI fears, and get clarity on the career.",
-      "category": "Business",
-      "source": "analyticsinsight",
-      "timestamp": "2025-08-20 03:13:08",
-      "url": "https://www.analyticsinsight.net/ampstories/data-science/data-science-jobs-9-myths-debunked",
-      "image": "https://media.assettype.com/analyticsinsight%2F2025-08-20%2Fql9sy87s%2FData-Science-Job-9-Myths-Debunked.jpg?ar=40%3A21&auto=format%2Ccompress&enlarge=true&mode=crop&ogImage=true&overlay=false&overlay_position=bottom&overlay_width=100&w=1200",
-      "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS"
-    },
-    {
-      "id": "20f0ac407199e339ec534ca3f357cd9a",
-      "title": "S. Korea: Peace efforts to serve both Seoul and Pyongyang",
-      "description": "South Korean President Lee Jae-myung's office said on Wednesday that Seoul's peace efforts aim to bring stability for both North Korea and South Korea.\"The Lee Jae-myung administration&...",
+      "id": "e2515a201900b163b1e584f797d75799",
+      "title": "Google Issues Emergency Security Update For All Chrome Users",
+      "description": "Update and restart all browsers today.",
       "category": "Technology",
-      "source": "biztoc",
-      "timestamp": "2025-08-20 03:14:31",
-      "url": "https://biztoc.com/x/53e299e0b99eec0b",
-      "image": "https://cdn.biztoc.com/53e299e0b99eec0b_sq.webp",
+      "source": "forbes",
+      "timestamp": "2025-08-20 07:34:18",
+      "url": "https://www.forbes.com/sites/zakdoffman/2025/08/20/google-issues-emergency-security-update-for-all-chrome-users/",
+      "image": "https://imageio.forbes.com/specials-images/imageserve/665ba016d3d11342555e4aba/0x0.jpg?precrop=3420%2C1924%2Cx774%2Cy1225&width=960",
       "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS"
     },
     {
-      "id": "00e03c1f55df96fa7f36ebef87f6e03f",
-      "title": "Japan’s exports tumble most in four years as U.S. tariff pain intensifies",
-      "description": "Exports fell 2.6% in value from a year earlier, sliding more than the median forecast of a 2.1% decline, the Finance Ministry has reported.",
-      "category": "Technology",
-      "source": "biztoc",
-      "timestamp": "2025-08-20 03:14:34",
-      "url": "https://biztoc.com/x/ee00a746f15d0360",
-      "image": "https://cdn.biztoc.com/ee00a746f15d0360_sq.webp",
-      "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS"
-    },
-    {
-      "id": "b3a3c1a18f62f88b47f943b32c4db55d",
-      "title": "CASEY RYAN: How Janet Mills And Susan Collins Respond To Title IX",
-      "description": "Maine Governor Janet Mills and her administration have refused to follow President Donald Trump’s executive order interpreting Title IX to limit women’s sports to biological females.",
+      "id": "eef53cb8ac7d9d9722d32dd9763fb1d1",
+      "title": "Ideas & Opinions — John Brady: What must be done in Gaza",
+      "description": "The New York Times had an article recently indicating a huge percentage of Americans now disbelieve the Israeli administration’s claims denying they are guilty of genocide or widespread slaughter in Gaza — and now the West Bank as well. The...",
       "category": "Politics",
-      "source": "ijr",
-      "timestamp": "2025-08-20 03:03:00",
-      "url": "https://ijr.com/casey-ryan-how-janet-mills-and-susan-collins-respond-to-title-ix/",
-      "image": "https://ijr.com/wp-content/uploads/2025/08/casey-ryan-how-janet-mills-and-susan-collins-respond-to-title-ix-400x168.jpeg",
+      "source": "theunion",
+      "timestamp": "2025-08-20 07:30:00",
+      "url": "https://www.theunion.com/news/community/ideas-opinions-john-brady-what-must-be-done-in-gaza/article_4d7c5ee0-9a6b-4ea8-88e8-576717f91c68.html",
+      "image": "https://bloximages.chicago2.vip.townnews.com/theunion.com/content/tncms/custom/image/895f2392-650d-11ed-9099-fb46053bbb4c.png?resize=600%2C315",
       "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS"
     },
     {
@@ -78,17 +56,39 @@
       "sentiment": "positive"
     },
     {
-      "id": "29bfedbe178f862fc78c0de2ad7525dd",
-      "title": "Leveraging AI Tools for Seamless DITA XML Editing",
-      "description": "Leveraging AI Tools for Seamless DITA XML Editing In today’s digital landscape, organizations are increasingly reliant on structured content and documentation to communicate effectively. The Darwin Information Typing Architecture (DITA) is a popular XML-based framework that offers a sophisticated method for managing documentation and content development processes. However, working with DITA XML can be complex [...]",
+      "id": "bfb2c5d27be2fd9e520eaba733266c06",
+      "title": "Buenaventura Mining Company Inc. $BVN Shares Purchased by Deutsche Bank AG",
+      "description": "Deutsche Bank AG boosted its holdings in Buenaventura Mining Company Inc. (NYSE:BVN – Free Report) by 4.0% during the 1st quarter, according to the company in its most recent disclosure with the SEC. The fund owned 193,163 shares of the mining company’s stock after buying an additional 7,358 shares during the quarter. Deutsche Bank AG [...]",
       "category": "Business",
-      "source": "zephyrnet",
-      "timestamp": "2025-08-20 03:13:31",
-      "url": "https://zephyrnet.com/leveraging-ai-tools-for-seamless-dita-xml-editing/",
-      "image": null,
+      "source": "defenseworld",
+      "timestamp": "2025-08-20 07:35:00",
+      "url": "https://www.defenseworld.net/2025/08/20/buenaventura-mining-company-inc-bvn-shares-purchased-by-deutsche-bank-ag.html",
+      "image": "https://www.americanbankingnews.com/wp-content/timthumb/timthumb.php?h=240&src=https%3A%2F%2Fwww.marketbeat.com%2Flogos%2Fcompan%CC%83i%CC%81a-de-minas-buenaventura-saa-logo-1200x675.png%3Fv%3D20221123145550&w=240&zc=2",
+      "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS"
+    },
+    {
+      "id": "ea5f3a3fc9c35c11d3dfaca290cdadb1",
+      "title": "China snaps up Russian oil as Indian demand drops following Trump tariffs",
+      "description": "Chinese refineries have moved to secure Russian oil shipments as demand from India for Moscow’s crude drops amid threats of President Donald Trump’s tariffs.",
+      "category": "Politics",
+      "source": "cnn",
+      "timestamp": "2025-08-20 07:33:04",
+      "url": "https://www.cnn.com/2025/08/20/business/china-secures-russian-oil-orders-intl-hnk",
+      "image": "https://media.cnn.com/api/v1/images/stellar/prod/gettyimages-2207989326-20250805070530071.jpg?c=16x9&q=h_720%2Cw_1280%2Cc_fill%2Fw_256",
+      "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS"
+    },
+    {
+      "id": "ece0aace7d00a920bb5aaf12d05d8fc6",
+      "title": "Why Solana Whales Keep Moving Funds Into Remittix Ahead of Official Launch",
+      "description": "Solana price breakout aligns with Remittix (RTX) crypto presale, making both cryptocurrency plays to watch.",
+      "category": "Technology",
+      "source": "analyticsinsight",
+      "timestamp": "2025-08-20 07:34:03",
+      "url": "https://www.analyticsinsight.net/cryptocurrency-analytics-insight/why-solana-whales-keep-moving-funds-into-remittix-ahead-of-official-launch",
+      "image": "https://media.assettype.com/analyticsinsight%2F2025-08-20%2Fzzonps6y%2FWhy-Solana-Whales-Keep-Moving-Funds-Into-Remittix-Ahead-of-Official-Launch?ar=40%3A21&auto=format%2Ccompress&enlarge=true&mode=crop&ogImage=true&overlay=false&overlay_position=bottom&overlay_width=100&w=1200",
       "sentiment": "ONLY AVAILABLE IN PROFESSIONAL AND CORPORATE PLANS"
     }
   ],
-  "cached_at": "2025-08-20T15:15:40.898500",
+  "cached_at": "2025-08-20T19:35:22.252842",
   "total_articles": 8
 }

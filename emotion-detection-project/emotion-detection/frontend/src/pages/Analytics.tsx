@@ -409,20 +409,30 @@ const Analytics: React.FC = () => {
     try {
       setLoading(true);
       
-      // Fetch system metrics from health endpoint
-      const healthResponse = await apiService.healthCheck();
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000); // 10 second timeout
+      });
+      
+      // Fetch system metrics from health endpoint with timeout
+      const healthResponse = await Promise.race([
+        apiService.healthCheck(),
+        timeoutPromise
+      ]) as any;
+      
       if (healthResponse.data) {
-        console.log('Health response data:', healthResponse.data);
-        console.log('Models available:', healthResponse.data.details?.models_available);
-        console.log('Dataset samples:', healthResponse.data.details?.dataset_samples);
+        const healthData = healthResponse.data as any;
+        console.log('Health response data:', healthData);
+        console.log('Models available:', healthData.details?.models_available);
+        console.log('Dataset samples:', healthData.details?.dataset_samples);
         
         setSystemMetrics({
-          total_analyses: healthResponse.data.details?.dataset_samples || 0,
+          total_analyses: healthData.details?.dataset_samples || 0,
           avg_confidence: 0.85, // Will be updated from model evaluation
           avg_processing_time: 0.23, // Will be updated from model evaluation
-          models_loaded: healthResponse.data.details?.models_available ? 2 : 0, // Real model count
-          data_ready: healthResponse.data.details?.embeddings_loaded || false,
-          uptime: healthResponse.data.uptime || 0,
+          models_loaded: healthData.details?.models_available ? 2 : 0, // Real model count
+          data_ready: healthData.details?.embeddings_loaded || false,
+          uptime: healthData.uptime || 0,
           emotion_performance: {} // Will be populated from model evaluation
         });
       }

@@ -651,6 +651,9 @@ async def get_training_progress():
 async def get_data_status():
     """Get data preparation status"""
     try:
+        # Check if data loading is in progress
+        loading_in_progress = hasattr(data_loader, 'loading') and data_loader.loading
+        
         # Check actual data readiness based on loaded components
         data_ready = (
             hasattr(data_loader, 'dataset_loaded') and 
@@ -660,6 +663,17 @@ async def get_data_status():
             hasattr(data_loader, 'emotion_categories') and 
             len(data_loader.emotion_categories) > 0
         )
+        
+        # Determine status
+        if loading_in_progress:
+            status = "in_progress"
+            message = "Data preparation in progress..."
+        elif data_ready:
+            status = "completed"
+            message = "Data ready for training"
+        else:
+            status = "not_started"
+            message = "Data not loaded"
         
         # Get actual sample counts if data is loaded
         training_samples = 0
@@ -673,10 +687,12 @@ async def get_data_status():
         if hasattr(data_loader, 'test_data') and data_loader.test_data is not None:
             test_samples = len(data_loader.test_data)
         
+        logger.info(f"Data status check - Ready: {data_ready}, Loading: {loading_in_progress}, Status: {status}")
+        
         return {
             "data_status": {
-                "status": "completed" if data_ready else "not_started",
-                "message": "Data ready for training" if data_ready else "Data not loaded",
+                "status": status,
+                "message": message,
                 "training_samples": training_samples,
                 "validation_samples": validation_samples,
                 "test_samples": test_samples,
@@ -692,12 +708,30 @@ async def get_data_status():
 async def start_data_preparation():
     """Start data preparation"""
     try:
-        # Check if data is already loaded
-        if data_loader.loaded and embeddings.loaded:
+        # Check if data is already loaded - use more robust checks
+        data_ready = (
+            hasattr(data_loader, 'loaded') and 
+            data_loader.loaded and 
+            hasattr(embeddings, 'loaded') and 
+            embeddings.loaded and
+            hasattr(data_loader, 'emotion_categories') and 
+            len(data_loader.emotion_categories) > 0
+        )
+        
+        if data_ready:
+            logger.info("Data already prepared and ready")
             return {
                 "message": "Data already prepared and ready", 
                 "status": "completed",
                 "note": "Data and embeddings are already loaded"
+            }
+        
+        # Check if data loading is in progress
+        if hasattr(data_loader, 'loading') and data_loader.loading:
+            return {
+                "message": "Data loading already in progress", 
+                "status": "in_progress",
+                "note": "Data loading is already running. Please wait."
             }
         
         # Start data preparation in background
@@ -707,6 +741,10 @@ async def start_data_preparation():
             try:
                 logger.info("Starting data preparation...")
                 
+                # Set loading flag to prevent multiple simultaneous loads
+                if hasattr(data_loader, 'loading'):
+                    data_loader.loading = True
+                
                 # Prepare training data using model trainer
                 model_trainer.prepare_training_data(data_loader, embeddings, text_processor)
                 
@@ -714,18 +752,24 @@ async def start_data_preparation():
                 
             except Exception as e:
                 logger.error(f"Data preparation failed: {e}")
+            finally:
+                # Clear loading flag
+                if hasattr(data_loader, 'loading'):
+                    data_loader.loading = False
         
         # Start preparation in background
         prep_thread = threading.Thread(target=prepare_data)
         prep_thread.daemon = True
         prep_thread.start()
         
+        logger.info("Data preparation started in background thread")
         return {
             "message": "Data preparation started in background", 
             "status": "in_progress",
             "note": "Data preparation is running in background. Check status via /api/models/data/status"
         }
     except Exception as e:
+        logger.error(f"Data preparation failed: {e}")
         raise HTTPException(status_code=500, detail=f"Data preparation failed: {str(e)}")
 
 # Model Status Endpoints

@@ -13,6 +13,7 @@ class DataLoader:
         self.val_data = None
         self.test_data = None
         self.loaded = False
+        self.loading = False  # Add loading flag to prevent multiple simultaneous loads
         
         # Initialize emotion mapping - will be populated from actual dataset
         self.emotion_mapping = {}

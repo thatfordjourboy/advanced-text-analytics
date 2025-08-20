@@ -322,6 +322,8 @@ const ModelTraining: React.FC = () => {
               const currentStatus = statusResponse.data.data_status;
               setDataStatus(currentStatus);
               
+              console.log('Data preparation status update:', currentStatus);
+              
               // Stop polling when preparation is complete or failed
               if (currentStatus.status === 'completed' || currentStatus.status === 'failed') {
                 if (dataPrepIntervalRef.current) {
@@ -335,10 +337,14 @@ const ModelTraining: React.FC = () => {
                 } else {
                   setError('Data preparation failed. Please try again.');
                 }
+              } else if (currentStatus.status === 'in_progress') {
+                // Update success message to show progress
+                setSuccess(`Data preparation in progress... ${currentStatus.message || ''}`);
               }
             }
           } catch (err) {
             console.error('Error polling data status:', err);
+            // Don't stop polling on error, just log it
           }
         }, 2000); // Poll every 2 seconds
         
