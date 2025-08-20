@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from typing import Dict, Any, List
 
-# Import your existing modules
+# Import existing modules
 from app.core.text_processor import TextProcessor
 from app.core.embeddings import GloVeEmbeddings
 from app.core.model_trainer import MultiLabelEmotionTrainer
@@ -97,6 +97,29 @@ trained_models = {}
 async def startup_event():
     """Initialize components on startup"""
     try:
+        # Run startup script to ensure data files exist
+        logger.info("🚀 Running data setup...")
+        import subprocess
+        import sys
+        
+        try:
+            # Run startup script
+            result = subprocess.run([
+                sys.executable, 
+                "/app/startup.py"
+            ], capture_output=True, text=True, timeout=1800)  # 30 minute timeout
+            
+            if result.returncode == 0:
+                logger.info("✅ Data setup completed successfully")
+                logger.info(f"Startup output: {result.stdout}")
+            else:
+                logger.warning(f"⚠️  Data setup had issues: {result.stderr}")
+                
+        except subprocess.TimeoutExpired:
+            logger.error("❌ Data setup timed out after 30 minutes")
+        except Exception as e:
+            logger.warning(f"⚠️  Data setup failed: {e}")
+        
         logger.info("Loading GloVe embeddings...")
         embeddings.load_embeddings()
         logger.info("✅ GloVe embeddings loaded successfully")

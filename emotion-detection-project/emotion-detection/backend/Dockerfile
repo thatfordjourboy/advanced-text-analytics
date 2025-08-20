@@ -1,5 +1,5 @@
-# Use Python 3.12 slim image for production
-FROM python:3.12-slim
+# Use Python 3.11 slim image for Render compatibility
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
@@ -15,18 +15,24 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    curl \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY requirements.txt .
+# Copy startup script
+COPY startup.py .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy requirements
+COPY requirements.txt .
 
 # Copy application code
 COPY app/ ./app/
-COPY data/ ./data/
-COPY models/ ./models/
+
+# Create data and models directories
+RUN mkdir -p data models
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash app \

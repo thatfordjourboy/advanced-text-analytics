@@ -5,6 +5,7 @@ python-multipart==0.0.6
 
 # HTTP client for API calls
 httpx==0.25.2
+requests==2.31.0
 
 # Machine Learning (Python 3.11+ compatible)
 scikit-learn==1.4.0

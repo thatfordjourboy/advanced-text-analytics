@@ -14,5 +14,9 @@ services:
         value: production
       - key: DEBUG
         value: false
+      - key: PYTHONPATH
+        value: /app
     healthCheckPath: /health
     autoDeploy: true
+    # Use standard instance for data processing
+    instanceType: standard-1x
