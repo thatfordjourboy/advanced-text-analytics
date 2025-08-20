@@ -29,12 +29,13 @@ class GloVeEmbeddings:
             if not self.txt_path.exists():
                 print(f"❌ GloVe file not found: {self.txt_path.name}")
                 print("📥 Please download the 2024 vectors from Stanford:")
-                print("🔗 https://nlp.stanford.edu/projects/glove/")
+                print("🔗 https://nlp.stanford.edu/data/wordvecs/glove.2024.wikigiga.100d.zip")
                 if self.dimension == 100:
-                    print("📁 Download: glove.2024.wikigiga.100d.zip (560 MB)")
+                    print("📁 Download: glove.2024.wikigiga.100d.zip (555 MB)")
                 elif self.dimension == 300:
                     print("📁 Download: glove.2024.wikigiga.300d.zip (1.6 GB)")
                 print("📂 Extract to: backend/data/ directory")
+                print("💡 Note: The startup script should handle this automatically on Render")
                 return False
             
             # Load embeddings
