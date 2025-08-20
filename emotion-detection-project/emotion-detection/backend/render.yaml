@@ -17,4 +17,3 @@ services:
         value: 8000
     healthCheckPath: /health
     autoDeploy: true
-    instanceType: standard-1x
