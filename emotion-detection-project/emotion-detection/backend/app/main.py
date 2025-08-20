@@ -93,67 +93,70 @@ def load_trained_models():
 # Load models on startup
 trained_models = {}
 
+# Force startup script execution on import
+def force_startup():
+    """Force startup script execution during module import."""
+    try:
+        logger.info("🚀 FORCING startup script execution...")
+        import subprocess
+        import sys
+        
+        # Run startup script - try multiple possible paths
+        startup_paths = [
+            "/app/startup.py",
+            "/opt/render/project/src/emotion-detection-project/emotion-detection/backend/startup.py",
+            "startup.py"  # fallback to current directory
+        ]
+        
+        logger.info(f"🔍 Checking startup script paths: {startup_paths}")
+        
+        startup_script = None
+        for path in startup_paths:
+            exists = os.path.exists(path)
+            logger.info(f"🔍 Path {path}: {'✅ EXISTS' if exists else '❌ NOT FOUND'}")
+            if exists:
+                startup_script = path
+                break
+        
+        if not startup_script:
+            logger.warning("⚠️  Startup script not found in any expected location")
+            logger.warning("⚠️  Current working directory: " + os.getcwd())
+            logger.warning("⚠️  Current directory contents: " + str(os.listdir('.')))
+        else:
+            logger.info(f"🔧 Running startup script from: {startup_script}")
+            logger.info(f"🔧 Using Python executable: {sys.executable}")
+            
+            try:
+                result = subprocess.run([
+                    sys.executable, 
+                    startup_script
+                ], capture_output=True, text=True, timeout=1800)  # 30 minute timeout
+                
+                logger.info(f"🔧 Startup script execution completed with return code: {result.returncode}")
+                logger.info(f"🔧 Startup script stdout: {result.stdout}")
+                logger.info(f"🔧 Startup script stderr: {result.stderr}")
+                
+                if result.returncode == 0:
+                    logger.info("✅ Data setup completed successfully")
+                    logger.info(f"Startup output: {result.stdout}")
+                else:
+                    logger.warning(f"⚠️  Data setup had issues: {result.stderr}")
+                    
+            except Exception as script_error:
+                logger.error(f"❌ Error executing startup script: {script_error}")
+                logger.error(f"❌ Script path: {startup_script}")
+                logger.error(f"❌ Python executable: {sys.executable}")
+                
+    except Exception as e:
+        logger.error(f"❌ Force startup failed: {e}")
+
+# Execute startup immediately
+force_startup()
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize components on startup"""
     try:
-        # Run startup script to ensure data files exist
-        logger.info("🚀 Running data setup...")
-        import subprocess
-        import sys
-        
-        try:
-            # Run startup script - try multiple possible paths
-            startup_paths = [
-                "/app/startup.py",
-                "/opt/render/project/src/emotion-detection-project/emotion-detection/backend/startup.py",
-                "startup.py"  # fallback to current directory
-            ]
-            
-            logger.info(f"🔍 Checking startup script paths: {startup_paths}")
-            
-            startup_script = None
-            for path in startup_paths:
-                exists = os.path.exists(path)
-                logger.info(f"🔍 Path {path}: {'✅ EXISTS' if exists else '❌ NOT FOUND'}")
-                if exists:
-                    startup_script = path
-                    break
-            
-            if not startup_script:
-                logger.warning("⚠️  Startup script not found in any expected location")
-                logger.warning("⚠️  Current working directory: " + os.getcwd())
-                logger.warning("⚠️  Current directory contents: " + str(os.listdir('.')))
-            else:
-                logger.info(f"🔧 Running startup script from: {startup_script}")
-                logger.info(f"🔧 Using Python executable: {sys.executable}")
-                
-                try:
-                    result = subprocess.run([
-                        sys.executable, 
-                        startup_script
-                    ], capture_output=True, text=True, timeout=1800)  # 30 minute timeout
-                    
-                    logger.info(f"🔧 Startup script execution completed with return code: {result.returncode}")
-                    logger.info(f"🔧 Startup script stdout: {result.stdout}")
-                    logger.info(f"🔧 Startup script stderr: {result.stderr}")
-                    
-                    if result.returncode == 0:
-                        logger.info("✅ Data setup completed successfully")
-                        logger.info(f"Startup output: {result.stdout}")
-                    else:
-                        logger.warning(f"⚠️  Data setup had issues: {result.stderr}")
-                        
-                except Exception as script_error:
-                    logger.error(f"❌ Error executing startup script: {script_error}")
-                    logger.error(f"❌ Script path: {startup_script}")
-                    logger.error(f"❌ Python executable: {sys.executable}")
-                    
-        except subprocess.TimeoutExpired:
-            logger.error("❌ Data setup timed out after 30 minutes")
-        except Exception as e:
-            logger.warning(f"⚠️  Data setup failed: {e}")
-        
         logger.info("Loading GloVe embeddings...")
         embeddings.load_embeddings()
         logger.info("✅ GloVe embeddings loaded successfully")
