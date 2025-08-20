@@ -1019,32 +1019,7 @@ const Analytics: React.FC = () => {
                 </div>
               </div>
 
-              {/* Empty State Message */}
-              {(!modelMetrics || !modelMetrics.emotion_distribution || Object.keys(modelMetrics.emotion_distribution).length === 0) && (
-                <div className="mb-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl p-8 border border-blue-500/20 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <BarChart3 className="w-8 h-8 text-blue-400" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">No Analytics Data Available</h3>
-                  <p className="text-slate-300 mb-4">
-                    To see analytics and performance metrics, you need to train your emotion detection models first.
-                  </p>
-                  <div className="flex items-center justify-center space-x-4">
-                    <button 
-                      onClick={() => window.location.href = '/model-training'}
-                      className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                    >
-                      Go to Model Training
-                    </button>
-                    <button 
-                      onClick={fetchMetrics}
-                      className="px-6 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors"
-                    >
-                      Refresh Data
-                    </button>
-                  </div>
-                </div>
-              )}
+
 
               {/* Methodology Section */}
               <div className="chart-container">
