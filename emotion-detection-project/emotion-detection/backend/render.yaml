@@ -4,19 +4,15 @@ services:
     env: python
     pythonVersion: "3.11"
     buildCommand: |
-      pip install --upgrade pip
-      pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11
-      - key: ENVIRONMENT
-        value: production
-      - key: DEBUG
-        value: false
-      - key: PYTHONPATH
-        value: /app
+      # Ensure we're using Python 3.11
+      python3.11 --version
+      python3.11 -m pip install --upgrade pip
+      python3.11 -m pip install -r requirements.txt
+    startCommand: python3.11 -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     autoDeploy: true
-    # Use standard instance for data processing
     instanceType: standard-1x
+    # Force Python 3.11 environment
+    buildFilter:
+      paths:
+        - backend/**
