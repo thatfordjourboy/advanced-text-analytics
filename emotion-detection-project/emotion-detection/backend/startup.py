@@ -48,10 +48,9 @@ class DataFileManager:
             "glove.2024.wikigiga.100d.zip": {
                 "size_mb": 555,
                 "sources": [
-                    "https://nlp.stanford.edu/data/glove.2024.wikigiga.100d.zip",
-                    "https://huggingface.co/datasets/stanfordnlp/glove/resolve/main/glove.2024.wikigiga.100d.zip"
+                    "https://nlp.stanford.edu/data/wordvecs/glove.2024.wikigiga.100d.zip"
                 ],
-                "description": "GloVe embeddings (555MB)"
+                "description": "GloVe embeddings (555MB) - Stanford NLP 2024"
             },
             "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt": {
                 "size_mb": 1600,
