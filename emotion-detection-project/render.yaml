@@ -1,19 +1,22 @@
 services:
   - type: web
     name: emotion-detection-backend
-    env: docker
-    dockerfilePath: ./emotion-detection/backend/Dockerfile
-    dockerContext: ./emotion-detection/backend
+    env: python
+    pythonVersion: "3.11.9"
+    buildCommand: |
+      cd emotion-detection/backend
+      pip install -r requirements.txt
+    startCommand: |
+      cd emotion-detection/backend
+      uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.11"
       - key: PYTHONPATH
-        value: /app
+        value: emotion-detection/backend
       - key: ENVIRONMENT
         value: production
       - key: DEBUG
         value: false
-      - key: PORT
-        value: 8000
+      - key: PYTHON_VERSION
+        value: "3.11.9"
     healthCheckPath: /health
     autoDeploy: true
