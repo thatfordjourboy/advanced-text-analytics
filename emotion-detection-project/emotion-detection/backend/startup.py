@@ -258,7 +258,7 @@ class DataFileManager:
                 logger.error("Failed to download GloVe vectors from all sources")
                 return False
         
-                # Extract GloVe vectors if zip exists but extracted file doesn't
+        # Extract GloVe vectors if zip exists but extracted file doesn't
         logger.info(f"Checking extraction condition:")
         logger.info(f"  - GloVe zip exists: {existing_files['glove.2024.wikigiga.100d.zip']}")
         logger.info(f"  - Extracted file exists: {existing_files['wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt']}")
@@ -295,7 +295,7 @@ class DataFileManager:
         for filename, info in self.required_files.items():
             file_path = self.data_dir / filename
             if not file_path.exists():
-                logger.error(f"❌ {filename} still missing after setup")
+                logger.error(f"{filename} still missing after setup")
                 return False
             
             size_mb = file_path.stat().st_size / (1024 * 1024)
@@ -309,14 +309,14 @@ class DataFileManager:
 
 def main():
     """Main startup function."""
-            logger.info("Starting Emotion Detection Backend data setup...")
+    logger.info("Starting Emotion Detection Backend data setup...")
     
     # Check if we're on Render (multiple possible paths)
     render_paths = ["/app", "/opt/render/project/src", "/opt/render/project/src/emotion-detection-project/emotion-detection/backend"]
     is_render = any(os.path.exists(path) for path in render_paths)
     
     if not is_render:
-        logger.info("ℹ️  Not on Render, skipping data setup")
+        logger.info("Not on Render, skipping data setup")
         return True
     
     # Initialize file manager
@@ -324,15 +324,15 @@ def main():
     
     # Download required files
     if not file_manager.download_required_files():
-        logger.error("❌ Failed to download required files")
+        logger.error("Failed to download required files")
         return False
     
     # Verify all files
     if not file_manager.verify_all_files():
-        logger.error("❌ File verification failed")
+        logger.error("File verification failed")
         return False
     
-            logger.info("Data setup completed successfully!")
+    logger.info("Data setup completed successfully!")
     return True
 
 if __name__ == "__main__":
