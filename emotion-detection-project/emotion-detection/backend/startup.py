@@ -59,11 +59,6 @@ class DataFileManager:
                 ],
                 "description": "GloVe embeddings (555MB) - Stanford NLP 2024"
             },
-            "glove_vectors.txt": {
-                "size_mb": 1600,
-                "sources": [],  # Will be extracted from zip
-                "description": "Extracted GloVe vectors (1.6GB) - filename discovered dynamically"
-            },
             "dialogues.json": {
                 "size_mb": 45,
                 "sources": [],  # Will be created if missing
@@ -321,6 +316,7 @@ class DataFileManager:
         """Verify all required files are present and accessible."""
         logger.info("Verifying all required files...")
         
+        # Check required files
         for filename, info in self.required_files.items():
             file_path = self.data_dir / filename
             if not file_path.exists():
@@ -330,7 +326,28 @@ class DataFileManager:
             size_mb = file_path.stat().st_size / (1024 * 1024)
             logger.info(f"{filename}: {size_mb:.1f}MB")
         
+        # Verify GloVe vectors were extracted (dynamic discovery)
+        glove_files = []
+        for item in self.data_dir.iterdir():
+            if item.is_file() and item.suffix == '.txt':
+                try:
+                    size_mb = item.stat().st_size / (1024 * 1024)
+                    if size_mb > 100:  # GloVe vectors should be >100MB
+                        glove_files.append((item, size_mb))
+                except Exception:
+                    continue
+        
+        if not glove_files:
+            logger.error("No extracted GloVe vector files found after setup")
+            return False
+        
+        # Use the largest .txt file as the GloVe vectors
+        glove_file, size_mb = max(glove_files, key=lambda x: x[1])
+        logger.info(f"GloVe vectors verified: {glove_file.name} ({size_mb:.1f}MB)")
+        
+        # Calculate total size including GloVe vectors
         total_size = sum((self.data_dir / f).stat().st_size for f in self.required_files)
+        total_size += glove_file.stat().st_size
         total_size_mb = total_size / (1024 * 1024)
         logger.info(f"Total data directory size: {total_size_mb:.1f}MB")
         
