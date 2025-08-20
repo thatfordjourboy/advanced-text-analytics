@@ -1,0 +1,32 @@
+{
+  "dataset_info": {
+    "total_dialogues": 13118,
+    "total_utterances": 102979,
+    "emotion_classes": [
+      "no emotion",
+      "happiness",
+      "surprise",
+      "sadness",
+      "anger",
+      "disgust",
+      "fear"
+    ]
+  },
+  "class_distribution": {
+    "no emotion": 85572,
+    "happiness": 12885,
+    "surprise": 1823,
+    "sadness": 1150,
+    "anger": 1022,
+    "disgust": 353,
+    "fear": 174
+  },
+  "imbalance_metrics": {
+    "imbalance_ratio": 491.7931034482759,
+    "most_frequent": "no emotion",
+    "least_frequent": "fear"
+  },
+  "text_statistics": {
+    "avg_chars": 57.70400761320269,
+    "avg_words": 11.222783285912662,
+    "min_chars": 
