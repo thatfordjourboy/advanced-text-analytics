@@ -51,7 +51,12 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Frontend development server
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",  # Frontend development server
+        "https://emotiondetector.live",  # Production frontend
+        "https://www.emotiondetector.live"  # Production frontend with www
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
