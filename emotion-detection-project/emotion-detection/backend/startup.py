@@ -21,8 +21,27 @@ class DataFileManager:
     """Manages data file downloads and caching on Render's persistent disk."""
     
     def __init__(self):
-        self.data_dir = Path("/app/data")  # Render persistent disk path
-        self.data_dir.mkdir(exist_ok=True)
+        # Try multiple possible data directory paths
+        possible_paths = [
+            Path("/app/data"),  # Render persistent disk path
+            Path("/opt/render/project/src/emotion-detection-project/emotion-detection/backend/data"),  # Render source path
+            Path("data"),  # Local development path
+            Path("/tmp/data"),  # Temporary path as fallback
+        ]
+        
+        self.data_dir = None
+        for path in possible_paths:
+            try:
+                path.mkdir(parents=True, exist_ok=True)
+                self.data_dir = path
+                logger.info(f"✅ Using data directory: {path}")
+                break
+            except Exception as e:
+                logger.warning(f"⚠️  Failed to create/use {path}: {e}")
+                continue
+        
+        if self.data_dir is None:
+            raise Exception("Could not create data directory in any location")
         
         # Required files with their sources
         self.required_files = {
