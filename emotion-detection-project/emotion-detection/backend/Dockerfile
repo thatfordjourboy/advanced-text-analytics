@@ -1,5 +1,5 @@
 # Use Python 3.11 slim image for Render compatibility
-FROM python:3.11-slim
+FROM python:3.11.9-slim
 
 # Set working directory
 WORKDIR /app
