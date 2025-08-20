@@ -126,22 +126,48 @@ class DataFileManager:
                 logger.error("❌ GloVe zip file not found")
                 return False
             
-            logger.info("📦 Extracting GloVe vectors...")
+            logger.info(f"📦 Extracting GloVe vectors from: {zip_path}")
+            logger.info(f"📦 Extracting to directory: {self.data_dir}")
+            
+            # List contents of zip file first
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                file_list = zip_ref.namelist()
+                logger.info(f"📦 Zip file contains {len(file_list)} files:")
+                for file in file_list:
+                    logger.info(f"📦   - {file}")
+                
+                logger.info("📦 Starting extraction...")
                 zip_ref.extractall(self.data_dir)
+                logger.info("📦 Extraction completed")
+            
+            # List directory contents after extraction
+            logger.info(f"📦 Directory contents after extraction:")
+            for item in self.data_dir.iterdir():
+                if item.is_file():
+                    size_mb = item.stat().st_size / (1024 * 1024)
+                    logger.info(f"📦   - {item.name} ({size_mb:.1f}MB)")
+                else:
+                    logger.info(f"📦   - {item.name} (directory)")
             
             # Verify extraction
             extracted_file = self.data_dir / "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"
             if extracted_file.exists():
                 size_mb = extracted_file.stat().st_size / (1024 * 1024)
-                logger.info(f"✅ GloVe vectors extracted ({size_mb:.1f}MB)")
+                logger.info(f"✅ GloVe vectors extracted successfully ({size_mb:.1f}MB)")
                 return True
             else:
-                logger.error("❌ Extracted file not found")
+                logger.error("❌ Extracted file not found after extraction")
+                logger.error(f"❌ Expected file: {extracted_file}")
+                logger.error(f"❌ Available files in {self.data_dir}:")
+                for item in self.data_dir.iterdir():
+                    logger.error(f"❌   - {item.name}")
                 return False
                 
         except Exception as e:
             logger.error(f"❌ Failed to extract GloVe vectors: {e}")
+            logger.error(f"❌ Error type: {type(e).__name__}")
+            import traceback
+            logger.error(f"❌ Full traceback: {traceback.format_exc()}")
             return False
     
     def create_sample_files(self) -> bool:
