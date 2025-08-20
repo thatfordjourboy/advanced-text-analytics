@@ -233,7 +233,15 @@ const Analytics: React.FC = () => {
       training_time: currentMetrics.training_time || 0.0,
       inference_time: 0.0,
       confusion_matrix: [],
-      emotion_distribution: {}
+      emotion_distribution: {
+        'no emotion': 72143,
+        'happiness': 11182,
+        'surprise': 1600,
+        'sadness': 969,
+        'anger': 827,
+        'disgust': 303,
+        'fear': 146
+      }
     };
   }, [allModelMetrics, selectedModel]);
 
@@ -397,7 +405,7 @@ const Analytics: React.FC = () => {
 
 
   
-  const fetchMetrics = async () => {
+  const fetchMetrics = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -535,7 +543,15 @@ const Analytics: React.FC = () => {
               training_time: latestTraining?.training_time || latestTraining?.total_training_time || 0.0,
               inference_time: 0.0,
               confusion_matrix: [],
-              emotion_distribution: {}
+              emotion_distribution: {
+                'no emotion': 72143,
+                'happiness': 11182,
+                'surprise': 1600,
+                'sadness': 969,
+                'anger': 827,
+                'disgust': 303,
+                'fear': 146
+              }
             };
             
             console.log('Fallback metrics from training history:', fallbackMetrics);
@@ -555,7 +571,15 @@ const Analytics: React.FC = () => {
           training_time: 0.0,
           inference_time: 0.0,
               confusion_matrix: [],
-              emotion_distribution: {}
+              emotion_distribution: {
+                'no emotion': 72143,
+                'happiness': 11182,
+                'surprise': 1600,
+                'sadness': 969,
+                'anger': 827,
+                'disgust': 303,
+                'fear': 146
+              }
             });
           }
         } catch (summaryErr) {
@@ -597,19 +621,19 @@ const Analytics: React.FC = () => {
           [0, 0, 0, 0, 0, 0, 0]
         ],
         emotion_distribution: {
-          anger: 0.0,
-          disgust: 0.0,
-          fear: 0.0,
-          happiness: 0.0,
-          'no emotion': 0.0,
-          sadness: 0.0,
-          surprise: 0.0
+          'no emotion': 72143,
+          'happiness': 11182,
+          'surprise': 1600,
+          'sadness': 969,
+          'anger': 827,
+          'disgust': 303,
+          'fear': 146
         }
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (shouldRefreshData()) {
@@ -677,7 +701,7 @@ const Analytics: React.FC = () => {
           }
         },
         emotion_distribution: modelMetrics?.emotion_distribution || {},
-        correlation_data: [], // Empty array as correlationData is not defined
+        correlation_data: emotionCorrelationData || [],
         export_timestamp: new Date().toISOString()
       };
 
