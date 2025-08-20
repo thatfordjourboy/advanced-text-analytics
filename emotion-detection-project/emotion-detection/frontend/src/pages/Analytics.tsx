@@ -72,7 +72,7 @@ const Analytics: React.FC = () => {
   const [exportFormats, setExportFormats] = useState<any[]>([]);
   const [isExporting, setIsExporting] = useState(false);
   const [selectedExportFormat, setSelectedExportFormat] = useState('json');
-  
+
   // Store metrics for both models separately
   const [allModelMetrics, setAllModelMetrics] = useState<{
     logistic_regression?: any;
@@ -291,7 +291,7 @@ const Analytics: React.FC = () => {
         } else if ((emotion1 === 'surprise' && emotion2 === 'no emotion') || 
                    (emotion1 === 'no emotion' && emotion2 === 'surprise')) {
           correlation = 0.23; // Weak positive
-        } else {
+      } else {
           correlation = (Math.random() - 0.5) * 0.4; // Random weak correlation
         }
         
@@ -472,7 +472,7 @@ const Analytics: React.FC = () => {
             console.log('Only Logistic Regression available');
           }
         }
-        
+
         console.log('Best model metrics:', bestModelMetrics);
 
         // Set real model metrics (will be updated dynamically based on selectedModel)
@@ -608,7 +608,7 @@ const Analytics: React.FC = () => {
     fetchMetrics();
     }
   }, [shouldRefreshData, fetchMetrics]);
-  
+
   // Update modelMetrics when selectedModel changes
   useEffect(() => {
     if (allModelMetrics && Object.keys(allModelMetrics).length > 0) {
