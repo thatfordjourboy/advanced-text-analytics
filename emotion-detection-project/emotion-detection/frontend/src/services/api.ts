@@ -1,4 +1,4 @@
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://localhost:8000';
 
 export interface ApiResponse<T = any> {
   data?: T;
@@ -7,38 +7,63 @@ export interface ApiResponse<T = any> {
 }
 
 class ApiService {
-  async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<ApiResponse<T>> {
+  async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
       const url = `${API_BASE_URL}${endpoint}`;
-      const response = await fetch(url, {
-        headers: {
+      console.log('Making API request to:', url, 'with options:', options);
+      
+      // Ensure proper headers for POST requests
+      if (options.method === 'POST' && !options.headers) {
+        options.headers = {
           'Content-Type': 'application/json',
-          ...options.headers,
-        },
+        };
+      }
+      
+      const response = await fetch(url, {
         ...options,
       });
 
       const data = await response.json();
-
+      console.log('API response:', { status: response.status, data });
+      
       if (!response.ok) {
+        console.error('API error response:', { status: response.status, data });
         return {
-          error: data.detail || data.error || 'An error occurred',
+          data: undefined,
           status: response.status,
+          error: data?.detail || `HTTP ${response.status}: ${response.statusText}`
         };
       }
 
       return {
-        data: data || null,
+        data: data || undefined,
         status: response.status,
       };
     } catch (error) {
       return {
-        error: error instanceof Error ? error.message : 'Network error',
-        status: 0,
+        data: undefined,
+        status: 500,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
+    }
+  }
+
+  async requestBlob(endpoint: string, options: RequestInit = {}): Promise<Blob> {
+    try {
+      const url = `${API_BASE_URL}${endpoint}`;
+      
+      const response = await fetch(url, {
+        ...options,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.detail || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.blob();
+    } catch (error) {
+      throw new Error(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -95,8 +120,15 @@ class ApiService {
   }
 
   // Emotion Detection
-  async detectEmotion(text: string, modelPreference: string = 'auto'): Promise<ApiResponse> {
+  async detectEmotion(text: string, modelPreference: string = 'logistic_regression'): Promise<ApiResponse> {
     return this.request('/api/detect-emotion', {
+      method: 'POST',
+      body: JSON.stringify({ text, model_preference: modelPreference }),
+    });
+  }
+
+  async detectEmotionMultiline(text: string, modelPreference: string = 'logistic_regression'): Promise<ApiResponse> {
+    return this.request('/api/detect-emotion/multiline', {
       method: 'POST',
       body: JSON.stringify({ text, model_preference: modelPreference }),
     });
@@ -109,6 +141,35 @@ class ApiService {
 
   async getDatasetInfo(): Promise<ApiResponse> {
     return this.request('/api/dataset/info');
+  }
+
+  async getLiveNews(): Promise<ApiResponse> {
+    return this.request('/api/news/live');
+  }
+
+  async forceRefreshNews(): Promise<ApiResponse> {
+    return this.request('/api/news/refresh', {
+      method: 'POST',
+    });
+  }
+
+  // Export functionality
+  async getExportFormats(): Promise<ApiResponse> {
+    return this.request('/api/export/formats');
+  }
+
+  async exportResults(results: any[], format: string, filename?: string): Promise<Blob> {
+    return this.requestBlob('/api/export/results', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        results,
+        format,
+        filename: filename || `emotion_analysis_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}`
+      }),
+    });
   }
 
   // Health Check - consolidated endpoint

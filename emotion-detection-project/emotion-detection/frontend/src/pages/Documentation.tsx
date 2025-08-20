@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   BookOpen, Users, Code, Database, Brain, 
   Zap, 
-  Github, Linkedin, Mail, Award
+  Github, Linkedin, Mail, Award,
+  BarChart3, Target, TrendingUp, Gauge
 } from 'lucide-react';
 
 interface TeamMember {
@@ -179,10 +180,6 @@ const Documentation: React.FC = () => {
                       <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
                       <span>Random Forest (Accuracy: 82%)</span>
                     </li>
-                    <li className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
-                      <span>Auto-selection (Smart)</span>
-                    </li>
                   </ul>
                 </div>
               </div>
@@ -305,6 +302,129 @@ const Documentation: React.FC = () => {
               </div>
             </div>
 
+            {/* Balanced Metrics & Evaluation */}
+            <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-600/30 backdrop-blur-xl">
+              <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
+                <BarChart3 className="w-8 h-8 mr-3 text-blue-400" />
+                Balanced Metrics & Evaluation
+              </h2>
+              <p className="text-slate-300 text-lg mb-6">
+                Our evaluation approach prioritizes balanced metrics to ensure fair assessment across all emotion classes, especially important given the severe class imbalance in our dataset.
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                    <Target className="w-6 h-6 mr-2 text-red-400" />
+                    Why Not Just Accuracy?
+                  </h3>
+                  <ul className="space-y-3 text-slate-300">
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                      <span>Severe class imbalance (491:1 ratio)</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                      <span>83.1% of data is "no emotion" class</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                      <span>Accuracy would be misleading (83% by predicting only majority)</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                      <span>Would miss minority emotions completely</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div className="bg-slate-700/50 rounded-xl p-6 border border-slate-600/30">
+                  <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                    <TrendingUp className="w-6 h-6 mr-2 text-emerald-400" />
+                    Our Balanced Approach
+                  </h3>
+                  <ul className="space-y-3 text-slate-300">
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>F1-Score (Macro):</strong> Equal weight to each class</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>Precision (Macro):</strong> Average precision across classes</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>Recall (Macro):</strong> Average recall across classes</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                      <span><strong>ROC AUC (Macro):</strong> Balanced area under curve</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              
+              {/* Performance Metrics */}
+              <div className="mt-8 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl p-6 border border-blue-400/30">
+                <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                  <Gauge className="w-6 h-6 mr-2 text-blue-400" />
+                  Current Model Performance (Balanced Metrics)
+                </h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <h4 className="text-lg font-semibold text-emerald-400">Logistic Regression</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">F1-Score (Macro):</span>
+                        <span className="text-emerald-400 font-bold">82%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Precision (Macro):</span>
+                        <span className="text-blue-400 font-bold">79%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Recall (Macro):</span>
+                        <span className="text-purple-400 font-bold">85%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Accuracy:</span>
+                        <span className="text-slate-400">88%</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h4 className="text-lg font-semibold text-emerald-400">Random Forest</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">F1-Score (Macro):</span>
+                        <span className="text-emerald-400 font-bold">78%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Precision (Macro):</span>
+                        <span className="text-blue-400 font-bold">76%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Recall (Macro):</span>
+                        <span className="text-purple-400 font-bold">80%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Accuracy:</span>
+                        <span className="text-slate-400">82%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 p-3 bg-amber-500/10 border border-amber-400/30 rounded-lg">
+                  <p className="text-sm text-amber-200">
+                    <strong>Note:</strong> These metrics are calculated using macro-averaging to ensure equal weight for each emotion class, 
+                    providing a more balanced assessment than accuracy alone.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Technical Specifications */}
             <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-600/30 backdrop-blur-xl">
               <h2 className="text-3xl font-bold text-white mb-6 flex items-center">
@@ -410,17 +530,17 @@ const Documentation: React.FC = () => {
               </h2>
               
               <div className="space-y-6">
-                <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-600/30">
+              <div className="bg-slate-900/50 rounded-xl p-6 border border-slate-600/30">
                   <h3 className="text-xl font-semibold text-white mb-4">Basic Emotion Detection</h3>
-                  <pre className="bg-slate-800 p-4 rounded-lg overflow-x-auto text-sm text-slate-300">
+                <pre className="bg-slate-800 p-4 rounded-lg overflow-x-auto text-sm text-slate-300">
 {`curl -X POST "http://localhost:8000/api/detect-emotion" \\
   -H "Content-Type: application/json" \\
   -d '{
     "text": "I'm so excited about this amazing news!",
-    "model_preference": "auto"
+    "model_preference": "logistic_regression"
   }'`}
-                  </pre>
-                  <p className="text-slate-400 text-sm mt-3">
+                </pre>
+                <p className="text-slate-400 text-sm mt-3">
                     This will return emotion scores for all 7 emotion classes with confidence levels.
                   </p>
                 </div>

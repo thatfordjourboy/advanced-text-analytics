@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Play, Square, Settings, RefreshCw, CheckCircle, 
   AlertCircle, Brain, Target, Activity,
-  Trash2, Eye, Crown
+  Trash2, Eye, Crown, Download, Zap, TrendingUp, BarChart3, Clock, FileText, X, Loader2
 } from 'lucide-react';
 import { apiService } from '../services/api';
 
@@ -94,13 +94,76 @@ const ModelTraining: React.FC = () => {
 
   // Real-time training updates
   const [trainingLog, setTrainingLog] = useState<string[]>([]);
-  const [trainingProgress, setTrainingProgress] = useState(0);
+  const [trainingProgress, setTrainingProgress] = useState<number>(0);
   const [trainingStartTime, setTrainingStartTime] = useState<Date | null>(null);
   const [trainingElapsed, setTrainingElapsed] = useState(0);
+  const [trainingLogs, setTrainingLogs] = useState<string[]>([]);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportFormats, setExportFormats] = useState<any[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
+  const [selectedExportFormat, setSelectedExportFormat] = useState('json');
 
   // Refs for real-time updates
   const trainingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Load export formats
+  useEffect(() => {
+    const loadFormats = async () => {
+      try {
+        const response = await apiService.getExportFormats();
+        if (response.data && response.data.formats) {
+          setExportFormats(response.data.formats);
+        }
+      } catch (error) {
+        console.error('Failed to load export formats:', error);
+      }
+    };
+    loadFormats();
+  }, []);
+
+  // Export training data
+  const exportTrainingData = async () => {
+    try {
+      setIsExporting(true);
+      
+      // Prepare training data for export
+      const trainingData = {
+        training_status: {
+          data_ready: dataStatus?.status === 'completed',
+          models_available: availableModels, // Assuming availableModels is the source of truth for models
+          total_samples: dataStatus?.training_samples || 0
+        },
+        training_history: trainingLogs,
+        model_performance: {
+          logistic_regression: availableModels.find(m => m.type === 'logistic_regression')?.parameters,
+          random_forest: availableModels.find(m => m.type === 'random_forest')?.parameters
+        },
+        data_preparation: dataStatus,
+        export_timestamp: new Date().toISOString()
+      };
+
+      const blob = await apiService.exportResults([trainingData], selectedExportFormat, 'training_data');
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `training_data_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.${selectedExportFormat}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      setShowExportModal(false);
+      alert('Training data export completed successfully!');
+    } catch (error) {
+      console.error('Training data export failed:', error);
+      alert(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   useEffect(() => {
     fetchStatus();
@@ -389,20 +452,18 @@ const ModelTraining: React.FC = () => {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* Header Section */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl mr-6">
-              <Brain className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-5xl font-black text-white text-display">
-                Model Training
-              </h1>
-              <p className="text-xl text-slate-300 text-body">
-                Train and manage your emotion detection models
-              </p>
-            </div>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Model Training</h1>
+          <p className="text-slate-400">Train and manage your emotion detection models</p>
+          <div className="mt-4 flex items-center justify-center space-x-4">
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all flex items-center space-x-2"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export Data</span>
+            </button>
           </div>
         </div>
 
@@ -933,6 +994,84 @@ const ModelTraining: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Export Training Data</h3>
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Export Format
+                </label>
+                <select
+                  value={selectedExportFormat}
+                  onChange={(e) => setSelectedExportFormat(e.target.value)}
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {exportFormats.map((format) => (
+                    <option key={format.id} value={format.id}>
+                      {format.name || format.id.toUpperCase()} - {format.description}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="bg-slate-700/50 rounded-lg p-3">
+                <p className="text-sm text-slate-300">
+                  <strong>Exporting:</strong> Training data including:
+                </p>
+                <ul className="text-xs text-slate-400 mt-1 list-disc list-inside">
+                  <li>Training status and progress</li>
+                  <li>Model performance metrics</li>
+                  <li>Data preparation status</li>
+                  <li>Training logs and history</li>
+                </ul>
+                <p className="text-xs text-slate-400 mt-1">
+                  Format: {selectedExportFormat.toUpperCase()}
+                </p>
+              </div>
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={exportTrainingData}
+                  disabled={isExporting}
+                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-2 px-4 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Exporting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      <span>Export</span>
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setShowExportModal(false)}
+                  className="px-4 py-2 bg-slate-600 text-slate-300 rounded-lg hover:bg-slate-500 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

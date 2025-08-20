@@ -16,19 +16,19 @@ class TextInput(BaseModel):
         widget="textarea"
     )
     model_preference: Optional[str] = Field(
-        default="auto", 
+        default="logistic_regression", 
         description="Choose which model to use for emotion detection.", 
-        example="auto", 
+        example="logistic_regression", 
         title="Model Selection", 
-        enum=["auto", "logistic_regression", "random_forest", "both"],
-        enum_names=["Auto (Best Available)", "Logistic Regression", "Random Forest", "Both Models"]
+        enum=["logistic_regression", "random_forest", "both"],
+        enum_names=["Logistic Regression", "Random Forest", "Both Models"]
     )
     
     class Config:
         json_schema_extra = {
             "example": {
                 "text": "I am absolutely thrilled and overjoyed! This is the best day ever!",
-                "model_preference": "auto"
+                "model_preference": "logistic_regression"
             },
             "ui_schema": {
                 "text": {
@@ -66,6 +66,20 @@ class EmotionPrediction(BaseModel):
     processing_time: float = Field(..., description="Processing time in seconds")
     model_used: str = Field(..., description="Name of the model used for prediction")
     model_confidence: Optional[Dict[str, float]] = Field(default=None, description="Confidence scores from both models if 'both' was requested")
+    timestamp: Optional[str] = Field(default=None, description="Timestamp of the analysis")
+
+class MultilineEmotionPrediction(BaseModel):
+    """Multi-line emotion detection result."""
+    text: str = Field(..., description="Input text")
+    overall_emotions: Dict[str, float] = Field(..., description="Overall emotion probabilities across all paragraphs")
+    overall_primary_emotion: str = Field(..., description="Overall primary emotion")
+    overall_confidence: float = Field(..., description="Overall confidence score")
+    sentence_analyses: List[Dict[str, Any]] = Field(..., description="Individual paragraph analyses")
+    total_paragraphs: int = Field(..., description="Total number of paragraphs analyzed")
+    processing_time: float = Field(..., description="Processing time in seconds")
+    model_used: str = Field(..., description="Name of the model used for prediction")
+    analysis_type: str = Field(..., description="Type of analysis performed")
+    timestamp: Optional[str] = Field(default=None, description="Timestamp of the analysis")
 
 class DatasetInfo(BaseModel):
     """Dataset information."""
