@@ -22,41 +22,41 @@ const Documentation: React.FC = () => {
     {
       name: 'Eleazer Quayson',
       studentId: '22253333',
-      role: 'Project Lead & ML Engineer',
-      expertise: ['Machine Learning', 'Python', 'FastAPI', 'React'],
-      contribution: 'Led the development of the emotion detection ML pipeline, implemented Logistic Regression and Random Forest models, and designed both backend and frontend architecture.',
+      role: 'Project Lead',
+      expertise: ['Machine Learning', 'Python', 'FastAPI', 'React', 'System Architecture'],
+      contribution: 'Led the complete development of the emotion detection system, implemented ML models, designed backend and frontend architecture, and managed the entire project lifecycle.',
       funStatement: 'Let it gooooo!!🚀'
     },
     {
       name: 'Ebenezer Yeboah',
       studentId: '22252382',
-      role: 'Frontend Developer & UI/UX Designer',
-      expertise: ['React', 'TypeScript', 'Tailwind CSS', 'UI/UX Design'],
-      contribution: 'Crafted the stunning dark theme interface, implemented interactive visualizations, and ensured seamless user experience across all pages.',
+      role: 'Team Member',
+      expertise: ['React', 'TypeScript', 'Frontend Development'],
+      contribution: 'Provided initial feedback and suggestions for the user interface design.',
       funStatement: 'Making tech beautiful, one pixel at a time! ✨'
     },
     {
       name: 'Dianah Yeboah Antwi',
       studentId: '22253222',
-      role: 'Data Scientist & Model Trainer',
-      expertise: ['Data Science', 'Scikit-learn', 'Model Evaluation', 'Data Preprocessing'],
-      contribution: 'Optimized model training pipelines, implemented cross-validation strategies, and fine-tuned hyperparameters for optimal performance.',
+      role: 'Team Member',
+      expertise: ['Data Science', 'Machine Learning'],
+      contribution: 'Contributed ideas for data preprocessing and model evaluation approaches.',
       funStatement: 'Just sincerely annoying!🤖'
     },
     {
       name: 'Daniel Taylor',
       studentId: '11410838',
-      role: 'Backend Engineer & API Developer',
-      expertise: ['FastAPI', 'Python', 'Database Design', 'System Architecture'],
-      contribution: 'Built robust backend services, implemented asynchronous processing, and ensured system scalability and reliability.',
+      role: 'Team Member',
+      expertise: ['Backend Development', 'API Design'],
+      contribution: 'Provided input on backend architecture and API endpoint design.',
       funStatement: 'Building bridges between data and decisions! 🌉'
     },
     {
       name: 'Cecil Nii Odartey Thompson',
       studentId: '11410507',
-      role: 'DevOps & System Integration',
-      expertise: ['Tech Enthusiast', 'Problem Solver', 'Innovation-Driven'],
-      contribution: 'Streamlined deployment processes, optimized system performance, and ensured seamless integration between frontend and backend.',
+      role: 'Team Member',
+      expertise: ['System Integration', 'Deployment'],
+      contribution: 'Offered suggestions for system integration and deployment strategies.',
       funStatement: 'Loves tinkering with gadgets! ⚡'
     }
   ];
