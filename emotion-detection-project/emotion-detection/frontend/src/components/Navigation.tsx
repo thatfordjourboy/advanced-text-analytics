@@ -8,7 +8,7 @@ const Navigation: React.FC = () => {
 
   const navItems = [
     { path: '/', label: 'Home', icon: Brain, description: 'Overview & Dashboard' },
-    { path: '/headlines', label: 'Emotion Detection', icon: Zap, description: 'Real-time Analysis' },
+    { path: '/detect-emotions', label: 'Emotion Detection', icon: Zap, description: 'Real-time Analysis' },
     { path: '/analytics', label: 'Analytics', icon: BarChart3, description: 'Data Insights' },
     { path: '/training', label: 'Model Training', icon: Settings, description: 'Train & Manage' },
 

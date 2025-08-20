@@ -156,7 +156,7 @@ const Home: React.FC = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-20">
-            <Link to="/headlines" className="group relative overflow-hidden">
+                            <Link to="/detect-emotions" className="group relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
               <div className="relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-2xl text-lg transform group-hover:scale-105 transition-all duration-300">
                 <Zap className="w-6 h-6 mr-3 inline-block group-hover:rotate-12 transition-transform" />
