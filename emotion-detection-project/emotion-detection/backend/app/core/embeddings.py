@@ -34,7 +34,7 @@ class GloVeEmbeddings:
         
         # call GloVe vectors
         if dimension == 100:
-            self.txt_path = self.data_dir / "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05.050_combined.txt"
+            self.txt_path = self.data_dir / "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"
         elif dimension == 300:
             self.txt_path = self.data_dir / "glove.2024.wikigiga.300d.txt"
         else:
@@ -47,6 +47,19 @@ class GloVeEmbeddings:
             if not self.txt_path.exists():
                 print(f"ERROR: GloVe file not found: {self.txt_path.name}")
                 print(f"File path: {self.txt_path}")
+                print(f"Data directory: {self.data_dir}")
+                print(f"Data directory exists: {self.data_dir.exists()}")
+                if self.data_dir.exists():
+                    print("Available files in data directory:")
+                    try:
+                        for item in self.data_dir.iterdir():
+                            if item.is_file():
+                                size_mb = item.stat().st_size / (1024 * 1024)
+                                print(f"  - {item.name} ({size_mb:.1f}MB)")
+                            else:
+                                print(f"  - {item.name} (directory)")
+                    except Exception as e:
+                        print(f"  Error listing contents: {e}")
                 print("Please download the 2024 vectors from Stanford:")
                 print("URL: https://nlp.stanford.edu/data/wordvecs/glove.2024.wikigiga.100d.zip")
                 if self.dimension == 100:
@@ -161,7 +174,7 @@ class GloVeEmbeddings:
         if not texts:
             return np.array([])
         
-        print(f"🚀 Processing {len(texts)} texts in optimized batches...")
+        print(f"Processing {len(texts)} texts in optimized batches...")
         
         # Pre-allocate result array
         result = np.zeros((len(texts), self.dimension), dtype='float32')
@@ -194,7 +207,7 @@ class GloVeEmbeddings:
                 if word_vectors:
                     result[chunk_start + i] = np.mean(word_vectors, axis=0)
         
-        print(f"✅ Completed batch processing of {len(texts)} texts")
+        print(f"Completed batch processing of {len(texts)} texts")
         return result
     
     def get_embedding_info(self) -> dict:

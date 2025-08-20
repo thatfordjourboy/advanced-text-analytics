@@ -8,7 +8,7 @@ This guide covers deploying your emotion detection project to:
 ## **⚠️ Important: Data Files**
 Your project requires large data files that are **NOT in git**:
 - **GloVe vectors**: `glove.2024.wikigiga.100d.zip` (~1.8GB)
-- **GloVe text file**: `wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05.050_combined.txt` (~3GB)
+- **GloVe text file**: `wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt` (~3GB)
 
 ## **🔧 Backend Deployment (Render)**
 
@@ -74,7 +74,7 @@ REACT_APP_ENVIRONMENT=production
 │   ├── dialogues.json      # ✅ In git
 │   ├── ontology.json       # ✅ In git
 │   ├── glove.2024.wikigiga.100d.zip  # ❌ Need to add
-│   └── wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05.050_combined.txt  # ❌ Need to add
+│   └── wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt  # ❌ Need to add
 ├── models/                 # ✅ In git
 ├── requirements.txt        # ✅ In git
 └── Dockerfile             # ✅ In git
@@ -120,7 +120,7 @@ if [ ! -f "glove.2024.wikigiga.100d.zip" ]; then
 fi
 
 # Extract if needed
-if [ ! -f "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05.050_combined.txt" ]; then
+if [ ! -f "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt" ]; then
     echo "Extracting GloVe vectors..."
     unzip -o glove.2024.wikigiga.100d.zip
 fi
@@ -169,7 +169,7 @@ def download_glove_vectors():
 ## **🔗 Useful Links**
 - [Render Documentation](https://render.com/docs)
 - [Vercel Documentation](https://vercel.com/docs)
-- [Stanford GloVe](https://nlp.stanford.edu/projects/glove/)
+- [Stanford GloVe 2024 Vectors](https://nlp.stanford.edu/data/wordvecs/glove.2024.wikigiga.100d.zip)
 
 ## **📞 Support**
 If you encounter issues:

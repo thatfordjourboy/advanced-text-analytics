@@ -27,7 +27,7 @@ The project implemented a practical three-stage data processing pipeline based o
 
 1. **Data Ingestion Layer**: ConvLab Daily Dialog Dataset was loaded directly from `data/dialogues.json` with pre-existing train/validation/test splits
 2. **Text Preprocessing Layer**: Minimal text cleaning was implemented using custom `TextProcessor` class (lowercase conversion, whitespace normalization)
-3. **Feature Engineering Layer**: Stanford GloVe 2024 vectors were loaded locally from `data/wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05.050_combined.txt`
+3. **Feature Engineering Layer**: Stanford GloVe 2024 vectors were loaded locally from `data/wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt`
 
 ### 2.2 Machine Learning Approach
 The system employed a **One-vs-Rest (OvR) strategy** for multi-label classification, treating each emotion as an independent binary classification problem. This approach allowed for:
@@ -59,7 +59,7 @@ The `TextProcessor` class implemented a minimalist approach to text preprocessin
 #### 3.1.2 Embedding Management System
 The `GloVeEmbeddings` class provided practical word vector management:
 - **Local GloVe Loading**: We downloaded and extracted Stanford GloVe 2024 vectors to `backend/data/` directory
-- **100-Dimensional Vectors**: We used `wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05.050_combined.txt` (560 MB)
+- **100-Dimensional Vectors**: We used `wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt` (560 MB)
 - **Batch Vectorization**: We processed texts in chunks of 1000 to prevent memory overflow
 - **Fallback Mechanisms**: We assigned zero vectors to out-of-vocabulary words and computed text vectors as mean of available word vectors
 
@@ -127,7 +127,7 @@ class GloVeEmbeddings:
 
 **Practical Implementation Steps:**
 1. **GloVe Download**: Downloaded `glove.2024.wikigiga.100d.zip` (560 MB) from Stanford NLP
-2. **Local Storage**: Extracted to `backend/data/wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05.050_combined.txt`
+2. **Local Storage**: Extracted to `backend/data/wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt`
 3. **Chunked Processing**: Implemented `chunk_size = 1000` to prevent memory crashes
 4. **Vector Aggregation**: Used `np.mean(vectors, axis=0)` for text-level representation
 5. **Memory Optimization**: Pre-allocated result arrays with `np.zeros((len(texts), self.dimension))`

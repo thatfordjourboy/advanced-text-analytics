@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚀 Startup Script for Emotion Detection Backend
+Startup Script for Emotion Detection Backend
 Downloads required data files during first startup and caches them on persistent disk.
 """
 
@@ -33,8 +33,15 @@ class DataFileManager:
         for path in possible_paths:
             try:
                 path.mkdir(parents=True, exist_ok=True)
+                # Test write permissions
+                test_file = path / "test_write.tmp"
+                test_file.write_text("test")
+                test_file.unlink()  # Clean up test file
+                
                 self.data_dir = path
                 logger.info(f"Using data directory: {path}")
+                logger.info(f"Directory permissions: {oct(path.stat().st_mode)}")
+                logger.info(f"Directory owner: {path.stat().st_uid}")
                 break
             except Exception as e:
                 logger.warning(f"Failed to create/use {path}: {e}")
@@ -155,6 +162,13 @@ class DataFileManager:
                 for file in file_list:
                     logger.info(f"  - {file}")
                 
+                # Verify zip file integrity
+                logger.info("Verifying zip file integrity...")
+                if zip_ref.testzip() is not None:
+                    logger.error("Zip file is corrupted!")
+                    return False
+                logger.info("Zip file integrity check passed")
+                
                 logger.info("Starting extraction...")
                 zip_ref.extractall(self.data_dir)
                 logger.info("Extraction completed")
@@ -177,6 +191,17 @@ class DataFileManager:
                 size_mb = extracted_file.stat().st_size / (1024 * 1024)
                 logger.info(f"GloVe vectors extracted successfully ({size_mb:.1f}MB)")
                 logger.info(f"Extraction verification: PASSED")
+                
+                # Additional verification - check if file is readable
+                try:
+                    with open(extracted_file, 'r', encoding='utf-8') as f:
+                        first_line = f.readline().strip()
+                        logger.info(f"First line of extracted file: {first_line[:100]}...")
+                    logger.info("File is readable - extraction fully verified")
+                except Exception as e:
+                    logger.error(f"File exists but is not readable: {e}")
+                    return False
+                
                 return True
             else:
                 logger.error("Extracted file not found after extraction")
@@ -258,15 +283,11 @@ class DataFileManager:
                 logger.error("Failed to download GloVe vectors from all sources")
                 return False
         
-        # Extract GloVe vectors if zip exists but extracted file doesn't
-        logger.info(f"Checking extraction condition:")
-        logger.info(f"  - GloVe zip exists: {existing_files['glove.2024.wikigiga.100d.zip']}")
-        logger.info(f"  - Extracted file exists: {existing_files['wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt']}")
-        
-        if (existing_files["glove.2024.wikigiga.100d.zip"] and 
-            not existing_files["wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"]):
-            logger.info("GloVe zip exists but extracted file missing - extracting now...")
-            logger.info("This will create the 1.6GB wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt file...")
+        # Always attempt extraction if zip exists (regardless of whether extracted file exists)
+        # This ensures we don't have corrupted or incomplete extractions
+        if existing_files["glove.2024.wikigiga.100d.zip"]:
+            logger.info("GloVe zip exists - attempting extraction...")
+            logger.info("This will create/overwrite the wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt file...")
             if not self.extract_glove_vectors():
                 logger.error("GloVe extraction failed!")
                 return False
@@ -274,12 +295,7 @@ class DataFileManager:
             # Re-check files after extraction
             existing_files = self.check_files_exist()
         else:
-            logger.info("Extraction condition not met:")
-            if not existing_files["glove.2024.wikigiga.100d.zip"]:
-                logger.info("  - GloVe zip file is missing")
-            if existing_files["wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"]:
-                logger.info("  - Extracted file already exists")
-            logger.info("Skipping extraction step")
+            logger.info("GloVe zip file is missing - cannot extract")
         
         # Create sample files if missing
         if not existing_files["dialogues.json"] or not existing_files["ontology.json"]:
@@ -315,9 +331,10 @@ def main():
     render_paths = ["/app", "/opt/render/project/src", "/opt/render/project/src/emotion-detection-project/emotion-detection/backend"]
     is_render = any(os.path.exists(path) for path in render_paths)
     
-    if not is_render:
-        logger.info("Not on Render, skipping data setup")
-        return True
+    if is_render:
+        logger.info("Running on Render - proceeding with data setup")
+    else:
+        logger.info("Not on Render - proceeding with data setup anyway (for local testing)")
     
     # Initialize file manager
     file_manager = DataFileManager()
