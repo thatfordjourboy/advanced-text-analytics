@@ -263,12 +263,24 @@ class MultiLabelEmotionTrainer:
                     # Use all samples for this class (or downsample if too many)
                     if current_count > target_count:
                         # Downsample to target count
-                        downsample_indices = np.random.choice(
-                            class_indices, 
-                            size=target_count, 
-                            replace=False,
-                            random_state=42
-                        )
+                        # Fix: Use 'rng' parameter for newer numpy, 'random_state' for older
+                        try:
+                            # Try newer numpy syntax first
+                            downsample_indices = np.random.choice(
+                                class_indices, 
+                                size=target_count, 
+                                replace=False,
+                                random_state=42
+                            )
+                        except TypeError:
+                            # Fallback for older numpy versions
+                            np.random.seed(42)  # Set seed manually
+                            downsample_indices = np.random.choice(
+                                class_indices, 
+                                size=target_count, 
+                                replace=False
+                            )
+                        
                         X_balanced.extend(X_train[downsample_indices])
                         y_balanced.extend(y_train[downsample_indices])
                         logger.info(f"Downsampled class {class_label}: {current_count} -> {target_count}")
@@ -283,7 +295,14 @@ class MultiLabelEmotionTrainer:
             y_balanced = np.array(y_balanced, dtype=y_train.dtype)
             
             # Shuffle the balanced data
-            shuffle_indices = np.random.permutation(len(X_balanced))
+            # Fix: Use compatible numpy random functions
+            try:
+                shuffle_indices = np.random.permutation(len(X_balanced))
+            except Exception:
+                # Fallback for older numpy versions
+                np.random.seed(42)
+                shuffle_indices = np.random.permutation(len(X_balanced))
+            
             X_balanced = X_balanced[shuffle_indices]
             y_balanced = y_balanced[shuffle_indices]
             
