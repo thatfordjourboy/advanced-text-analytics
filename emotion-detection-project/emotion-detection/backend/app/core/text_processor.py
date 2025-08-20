@@ -7,23 +7,37 @@ logger = logging.getLogger(__name__)
 
 class TextProcessor:
     """
-    Minimal text processor - basic cleaning only.
-    No stop word removal, just simple text normalization.
+    Enhanced text processor for emotion detection.
+    Preserves emotional context while cleaning text.
     """
     
     def __init__(self):
-        """Initialize minimal text processor."""
-        logger.info("✅ Minimal TextProcessor initialized - basic cleaning only")
+        """Initialize enhanced text processor."""
+        logger.info("✅ Enhanced TextProcessor initialized - preserving emotional context")
+        
+        # Emotional intensity markers to preserve
+        self.emotional_markers = {
+            'very': 2.0, 'really': 2.0, 'extremely': 3.0, 'absolutely': 3.0,
+            'hate': 3.0, 'love': 3.0, 'adore': 3.0, 'despise': 3.0,
+            'terrible': 2.5, 'amazing': 2.5, 'awful': 2.5, 'wonderful': 2.5,
+            'horrible': 2.5, 'fantastic': 2.5, 'dreadful': 2.5, 'excellent': 2.5
+        }
+        
+        # Emotional punctuation patterns
+        self.emotional_punctuation = {
+            '!': 1.5, '!!': 2.0, '!!!': 2.5,
+            '?': 1.2, '??': 1.5, '???': 2.0
+        }
     
     def clean_text(self, text: str) -> str:
         """
-        Basic text cleaning.
+        Enhanced text cleaning that preserves emotional context.
         
         Args:
             text: Input text
             
         Returns:
-            Cleaned text
+            Cleaned text with emotional context preserved
         """
         if not text:
             return ""
@@ -31,9 +45,27 @@ class TextProcessor:
         # Convert to string if needed
         text = str(text)
         
-        # Minimal cleaning only
+        # Preserve emotional punctuation before cleaning
+        emotional_score = 0
+        for pattern, score in self.emotional_punctuation.items():
+            if pattern in text:
+                emotional_score += score * text.count(pattern)
+        
+        # Enhanced cleaning that preserves emotional words
         text = text.lower().strip()
-        text = re.sub(r'\s+', ' ', text)  # Remove extra whitespace
+        
+        # Preserve emotional intensity words
+        for word in self.emotional_markers:
+            if word in text:
+                # Add intensity marker to preserve emotional context
+                text = text.replace(word, f"{word}_INTENSE")
+        
+        # Remove extra whitespace but preserve structure
+        text = re.sub(r'\s+', ' ', text)
+        
+        # Add emotional context marker if high emotional content detected
+        if emotional_score > 2.0:
+            text = f"EMOTIONAL_CONTEXT_{text}"
         
         return text
     

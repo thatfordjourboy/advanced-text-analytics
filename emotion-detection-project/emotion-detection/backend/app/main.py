@@ -305,14 +305,43 @@ async def predict_emotion(request: TextInput):
         # Get confidence (max probability)
         confidence = float(max(probabilities)) if probabilities.size > 0 else 0.0
         
+        # Calculate prediction quality metrics
+        sorted_probs = sorted(probabilities, reverse=True)
+        second_highest = sorted_probs[1] if len(sorted_probs) > 1 else 0
+        confidence_gap = confidence - second_highest
+        
+        # Determine prediction quality
+        confidence_threshold = 0.6  # Minimum confidence required
+        if confidence < confidence_threshold:
+            prediction_quality = 'low_confidence'
+            quality_message = f'Prediction confidence ({confidence:.1%}) below threshold ({confidence_threshold:.1%})'
+        elif confidence_gap < 0.1:
+            prediction_quality = 'uncertain'
+            quality_message = f'Multiple emotions have similar confidence (gap: {confidence_gap:.1%})'
+        else:
+            prediction_quality = 'high_confidence'
+            quality_message = 'Prediction is confident and reliable'
+        
+        # Filter low-confidence emotions (only show emotions above 30% confidence)
+        filtered_emotions = {}
+        for emotion, prob in emotions.items():
+            if prob >= 0.3:  # Show emotions above 30% confidence
+                filtered_emotions[emotion] = prob
+        
+        # Sort emotions by confidence
+        sorted_emotions = dict(sorted(filtered_emotions.items(), key=lambda x: x[1], reverse=True))
+        
         return EmotionPrediction(
             text=request.text,
-            emotions=emotions,
+            emotions=sorted_emotions,
             primary_emotion=primary_emotion,
             confidence=confidence,
             processing_time=processing_time,
             model_used=model_name,
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now().isoformat(),
+            prediction_quality=prediction_quality,
+            quality_message=quality_message,
+            confidence_gap=confidence_gap
         )
         
     except Exception as e:

@@ -57,6 +57,9 @@ class MultiLabelEmotionTrainer:
         self.y_val = None
         self.test_data = None
         
+        # Data augmentation for class balancing
+        self.augmentation_enabled = True
+        
         # Training results
         self.training_results = {}
         self.evaluation_results = {}
@@ -68,22 +71,25 @@ class MultiLabelEmotionTrainer:
         # Load existing models if available
         self._load_existing_models()
         
-        # Model parameters
+        # Model parameters - optimized for imbalanced data
         self.lr_params = {
-                'C': 1.0,
-                'max_iter': 1000,
-                'solver': 'lbfgs',  # Multiclass-compatible solver
-                'penalty': 'l2',     # L2 penalty for multiclass
+                'C': 0.1,  # Stronger regularization for imbalanced data
+                'max_iter': 2000,  # More iterations for convergence
+                'solver': 'liblinear',  # Better for imbalanced data
+                'penalty': 'l1',     # L1 penalty for feature selection
+                'class_weight': 'balanced',  # Handle class imbalance
                 'random_state': 42
         }
         
         self.rf_params = {
-                'n_estimators': 100,
-                'max_depth': 25,
-                'min_samples_split': 5,
-                'min_samples_leaf': 2,
-                'max_features': 'sqrt',
-                'class_weight': 'balanced',
+                'n_estimators': 200,  # More trees for better minority class handling
+                'max_depth': 15,      # Prevent overfitting
+                'min_samples_split': 10,  # Require more samples to split
+                'min_samples_leaf': 5,    # Require more samples per leaf
+                'max_features': 'sqrt',   # Feature selection
+                'class_weight': 'balanced',  # Handle class imbalance
+                'bootstrap': True,     # Enable bootstrapping
+                'oob_score': True,     # Out-of-bag scoring
                 'random_state': 42
             }
     
@@ -172,11 +178,87 @@ class MultiLabelEmotionTrainer:
             logger.info(f"✅ Test data reserved for final evaluation: {test_data.shape if test_data is not None else 'None'}")
             logger.info(f"✅ Preprocessing pipeline stored for prediction reuse")
             
+            # Balance training data if augmentation is enabled
+            if self.augmentation_enabled:
+                logger.info("Balancing training data to handle class imbalance...")
+                X_train_balanced, y_train_balanced = self._balance_training_data(X_train, y_train)
+                self.X_train = X_train_balanced
+                self.y_train = y_train_balanced
+                logger.info(f"✅ Balanced training data: X_train {X_train_balanced.shape}, y_train {y_train_balanced.shape}")
+            
             return True
             
         except Exception as e:
             logger.error(f"Error preparing training data: {e}")
             raise
+    
+    def _balance_training_data(self, X_train: np.ndarray, y_train: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Balance training data to handle class imbalance using simple oversampling.
+        
+        Args:
+            X_train: Training features
+            y_train: Training labels
+            
+        Returns:
+            Balanced training data
+        """
+        try:
+            from collections import Counter
+            from sklearn.utils import resample
+            
+            # Count samples per class
+            class_counts = Counter(y_train)
+            logger.info(f"Original class distribution: {dict(class_counts)}")
+            
+            # Find the majority class
+            majority_class = max(class_counts, key=class_counts.get)
+            majority_count = class_counts[majority_class]
+            
+            # Target count for each class (use majority class as baseline)
+            target_count = majority_count
+            
+            # Oversample minority classes
+            X_balanced = []
+            y_balanced = []
+            
+            for class_label in np.unique(y_train):
+                class_indices = np.where(y_train == class_label)[0]
+                class_samples = X_train[class_indices]
+                
+                if len(class_samples) < target_count:
+                    # Oversample this class
+                    oversampled_indices = resample(
+                        class_indices,
+                        n_samples=target_count,
+                        random_state=42,
+                        replace=True
+                    )
+                    X_balanced.extend(X_train[oversampled_indices])
+                    y_balanced.extend(y_train[oversampled_indices])
+                    logger.info(f"Oversampled class {class_label}: {len(class_samples)} -> {target_count}")
+                else:
+                    # Use all samples for this class
+                    X_balanced.extend(class_samples)
+                    y_balanced.extend(y_train[class_indices])
+            
+            X_balanced = np.array(X_balanced)
+            y_balanced = np.array(y_balanced)
+            
+            # Shuffle the balanced data
+            shuffle_indices = np.random.permutation(len(X_balanced))
+            X_balanced = X_balanced[shuffle_indices]
+            y_balanced = y_balanced[shuffle_indices]
+            
+            balanced_counts = Counter(y_balanced)
+            logger.info(f"Balanced class distribution: {dict(balanced_counts)}")
+            
+            return X_balanced, y_balanced
+            
+        except Exception as e:
+            logger.error(f"Data balancing failed: {e}")
+            # Return original data if balancing fails
+            return X_train, y_train
     
     def prepare_multi_label_data(self, texts: List[str], labels: List[int], 
                                 emotion_mapping: Dict[str, int]) -> Tuple[np.ndarray, np.ndarray]:

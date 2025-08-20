@@ -67,6 +67,9 @@ class EmotionPrediction(BaseModel):
     model_used: str = Field(..., description="Name of the model used for prediction")
     model_confidence: Optional[Dict[str, float]] = Field(default=None, description="Confidence scores from both models if 'both' was requested")
     timestamp: Optional[str] = Field(default=None, description="Timestamp of the analysis")
+    prediction_quality: Optional[str] = Field(default=None, description="Quality of prediction: 'high_confidence', 'uncertain', or 'low_confidence'")
+    quality_message: Optional[str] = Field(default=None, description="Human-readable message about prediction quality")
+    confidence_gap: Optional[float] = Field(default=None, description="Gap between highest and second-highest confidence scores")
 
 class MultilineEmotionPrediction(BaseModel):
     """Multi-line emotion detection result."""
