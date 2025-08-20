@@ -6,6 +6,107 @@ import {
 } from 'lucide-react';
 import { apiService } from '../services/api';
 
+// Progress Bar Component
+interface ProgressBarProps {
+  progress: number;
+  status: string;
+  currentStep: string;
+  steps: string[];
+  elapsed: number;
+  isActive: boolean;
+  type: 'data' | 'training';
+}
+
+const ProgressBar: React.FC<ProgressBarProps> = ({ 
+  progress, 
+  status, 
+  currentStep, 
+  steps, 
+  elapsed, 
+  isActive, 
+  type 
+}) => {
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getStatusColor = () => {
+    if (status === 'completed') return 'bg-green-500';
+    if (status === 'failed') return 'bg-red-500';
+    if (status === 'in_progress') return 'bg-blue-500';
+    return 'bg-gray-500';
+  };
+
+  const getStepColor = (step: string) => {
+    if (step === currentStep) return 'text-blue-400 font-semibold';
+    if (steps.indexOf(step) < steps.indexOf(currentStep)) return 'text-green-400';
+    return 'text-gray-400';
+  };
+
+  return (
+    <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-white">
+          {type === 'data' ? 'Data Preparation' : 'Model Training'} Progress
+        </h3>
+        <div className="flex items-center space-x-2">
+          <div className={`w-3 h-3 rounded-full ${getStatusColor()} animate-pulse`}></div>
+          <span className="text-sm text-slate-300 capitalize">{status.replace('_', ' ')}</span>
+        </div>
+      </div>
+      
+      {/* Main Progress Bar */}
+      <div className="mb-4">
+        <div className="flex justify-between text-sm text-slate-400 mb-2">
+          <span>Progress</span>
+          <span>{progress}%</span>
+        </div>
+        <div className="w-full bg-slate-700 rounded-full h-3">
+          <div 
+            className={`h-3 rounded-full transition-all duration-500 ease-out ${getStatusColor()}`}
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+      </div>
+      
+      {/* Current Step */}
+      {currentStep && (
+        <div className="mb-4 p-3 bg-slate-700/50 rounded-lg">
+          <div className="text-sm text-slate-400 mb-1">Current Step:</div>
+          <div className="text-white font-medium">{currentStep}</div>
+        </div>
+      )}
+      
+      {/* Steps List */}
+      {steps.length > 0 && (
+        <div className="mb-4">
+          <div className="text-sm text-slate-400 mb-2">Steps:</div>
+          <div className="space-y-1">
+            {steps.map((step, index) => (
+              <div key={index} className={`text-sm ${getStepColor(step)}`}>
+                {step}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* Time and Status */}
+      <div className="flex justify-between items-center text-sm text-slate-400">
+        <span>Elapsed: {formatTime(elapsed)}</span>
+        {isActive && (
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+            <span>Active</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 interface TrainingStatus {
   model_type: string;
   status: 'idle' | 'training' | 'completed' | 'failed';
@@ -98,6 +199,13 @@ const ModelTraining: React.FC = () => {
   const [trainingStartTime, setTrainingStartTime] = useState<Date | null>(null);
   const [trainingElapsed, setTrainingElapsed] = useState(0);
   const [trainingLogs, setTrainingLogs] = useState<string[]>([]);
+  
+  // Progress tracking states
+  const [dataPrepProgress, setDataPrepProgress] = useState<number>(0);
+  const [dataPrepSteps, setDataPrepSteps] = useState<string[]>([]);
+  const [currentDataPrepStep, setCurrentDataPrepStep] = useState<string>('');
+  const [dataPrepStartTime, setDataPrepStartTime] = useState<Date | null>(null);
+  const [dataPrepElapsed, setDataPrepElapsed] = useState(0);
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportFormats, setExportFormats] = useState<any[]>([]);
   const [isExporting, setIsExporting] = useState(false);
@@ -287,20 +395,54 @@ const ModelTraining: React.FC = () => {
         
         if (progress.status === 'completed') {
           setIsTraining(false);
+          setTrainingProgress(100);
           setSuccess(`Training completed successfully! Model accuracy: ${(progress.current_score || 0) * 100}%`);
           fetchAvailableModels(); // Refresh model list
         } else if (progress.status === 'failed') {
           setIsTraining(false);
+          setTrainingProgress(0);
           setError('Training failed. Check the logs for details.');
         } else if (progress.status === 'training') {
-          setTrainingProgress(progress.progress_percentage || 0);
+          // Simulate realistic training progress
+          const elapsed = Math.floor((Date.now() - (trainingStartTime?.getTime() || Date.now())) / 1000);
+          setTrainingElapsed(elapsed);
+          
+          // Estimate progress based on typical training time (2-5 minutes)
+          const estimatedTotalTime = 180; // 3 minutes
+          const simulatedProgress = Math.min(95, Math.floor((elapsed / estimatedTotalTime) * 100));
+          
+          // Use backend progress if available, otherwise use simulated
+          const finalProgress = progress.progress_percentage || simulatedProgress;
+          setTrainingProgress(finalProgress);
+          
           if (progress.messages) {
             setTrainingLog(progress.messages);
+          }
+        }
+      } else {
+        // Simulate progress if no backend data
+        if (isTraining && trainingStartTime) {
+          const elapsed = Math.floor((Date.now() - trainingStartTime.getTime()) / 1000);
+          setTrainingElapsed(elapsed);
+          
+          // Simulate realistic training progress
+          const estimatedTotalTime = 180; // 3 minutes
+          const progress = Math.min(95, Math.floor((elapsed / estimatedTotalTime) * 100));
+          setTrainingProgress(progress);
+          
+          // Update training log with simulated steps
+          const currentStepIndex = Math.floor((progress / 100) * (trainingLog.length - 1));
+          if (currentStepIndex >= 0 && currentStepIndex < trainingLog.length) {
+            const currentStep = trainingLog[currentStepIndex];
+            if (!trainingLog.includes(currentStep)) {
+              setTrainingLog(prev => [...prev, currentStep]);
+            }
           }
         }
       }
     } catch (err) {
       console.error('Error fetching training progress:', err);
+      // Continue with simulated progress on error
     }
   };
 
@@ -309,6 +451,20 @@ const ModelTraining: React.FC = () => {
       setIsPreparingData(true);
       setError(null);
       setSuccess(null);
+      
+      // Initialize progress tracking
+      setDataPrepProgress(0);
+      setDataPrepSteps([
+        'Initializing data preparation...',
+        'Loading dataset...',
+        'Processing embeddings...',
+        'Preparing training data...',
+        'Validating data splits...',
+        'Finalizing preparation...'
+      ]);
+      setCurrentDataPrepStep('Initializing data preparation...');
+      setDataPrepStartTime(new Date());
+      setDataPrepElapsed(0);
       
       const response = await apiService.startDataPreparation();
       if (response.data) {
@@ -324,6 +480,33 @@ const ModelTraining: React.FC = () => {
               
               console.log('Data preparation status update:', currentStatus);
               
+              // Update progress based on status
+              if (currentStatus.status === 'in_progress') {
+                // Simulate progress based on time elapsed
+                const elapsed = Math.floor((Date.now() - (dataPrepStartTime?.getTime() || Date.now())) / 1000);
+                setDataPrepElapsed(elapsed);
+                
+                // Estimate progress based on typical data preparation time (30-60 seconds)
+                const estimatedTotalTime = 45; // seconds
+                const progress = Math.min(95, Math.floor((elapsed / estimatedTotalTime) * 100));
+                setDataPrepProgress(progress);
+                
+                // Update current step based on progress
+                if (progress < 20) {
+                  setCurrentDataPrepStep('Loading dataset...');
+                } else if (progress < 40) {
+                  setCurrentDataPrepStep('Processing embeddings...');
+                } else if (progress < 60) {
+                  setCurrentDataPrepStep('Preparing training data...');
+                } else if (progress < 80) {
+                  setCurrentDataPrepStep('Validating data splits...');
+                } else {
+                  setCurrentDataPrepStep('Finalizing preparation...');
+                }
+                
+                setSuccess(`Data preparation in progress... ${currentStatus.message || ''}`);
+              }
+              
               // Stop polling when preparation is complete or failed
               if (currentStatus.status === 'completed' || currentStatus.status === 'failed') {
                 if (dataPrepIntervalRef.current) {
@@ -333,13 +516,14 @@ const ModelTraining: React.FC = () => {
                 setIsPreparingData(false);
                 
                 if (currentStatus.status === 'completed') {
+                  setDataPrepProgress(100);
+                  setCurrentDataPrepStep('Data preparation completed!');
                   setSuccess('Data preparation completed successfully! Data is ready for training.');
                 } else {
+                  setDataPrepProgress(0);
+                  setCurrentDataPrepStep('Data preparation failed');
                   setError('Data preparation failed. Please try again.');
                 }
-              } else if (currentStatus.status === 'in_progress') {
-                // Update success message to show progress
-                setSuccess(`Data preparation in progress... ${currentStatus.message || ''}`);
               }
             }
           } catch (err) {
@@ -356,6 +540,8 @@ const ModelTraining: React.FC = () => {
           }
           if (isPreparingData) {
             setIsPreparingData(false);
+            setDataPrepProgress(0);
+            setCurrentDataPrepStep('Data preparation timed out');
             setError('Data preparation timed out. Please check the backend logs.');
           }
         }, 300000);
@@ -401,6 +587,17 @@ const ModelTraining: React.FC = () => {
       setTrainingLog([]);
       setTrainingStartTime(new Date());
       setTrainingElapsed(0);
+      
+      // Initialize training progress tracking
+      setTrainingProgress(0);
+      setTrainingLog([
+        'Initializing model training...',
+        'Loading training data...',
+        'Training model...',
+        'Validating performance...',
+        'Saving model...',
+        'Training completed!'
+      ]);
 
       const endpoint = selectedModelType === 'logistic_regression' 
         ? '/api/models/train/logistic_regression'
@@ -604,6 +801,21 @@ const ModelTraining: React.FC = () => {
                 </p>
               </div>
             </div>
+            
+            {/* Progress Bar - Show when data preparation is active */}
+            {(isPreparingData || dataStatus?.status === 'in_progress') && (
+              <div className="mt-6">
+                <ProgressBar
+                  progress={dataPrepProgress}
+                  status={dataStatus?.status || 'in_progress'}
+                  currentStep={currentDataPrepStep}
+                  steps={dataPrepSteps}
+                  elapsed={dataPrepElapsed}
+                  isActive={isPreparingData || dataStatus?.status === 'in_progress'}
+                  type="data"
+                />
+              </div>
+            )}
 
             {dataStatus && (
               <div className="mt-6 p-4 bg-slate-700/50 rounded-xl">
@@ -870,19 +1082,16 @@ const ModelTraining: React.FC = () => {
             
             {isTraining ? (
               <div className="space-y-6">
-                {/* Progress Bar */}
-                <div>
-                  <div className="flex justify-between text-sm text-slate-300 mb-2">
-                    <span>Progress</span>
-                    <span>{trainingProgress}%</span>
-                  </div>
-                  <div className="w-full bg-slate-700 rounded-full h-3">
-                    <div 
-                      className="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${trainingProgress}%` }}
-                    ></div>
-                  </div>
-                </div>
+                {/* Enhanced Progress Bar */}
+                <ProgressBar
+                  progress={trainingProgress}
+                  status="in_progress"
+                  currentStep={trainingLog[Math.floor((trainingProgress / 100) * (trainingLog.length - 1))] || 'Initializing...'}
+                  steps={trainingLog}
+                  elapsed={trainingElapsed}
+                  isActive={isTraining}
+                  type="training"
+                />
 
                 {/* Training Stats */}
                 <div className="grid grid-cols-2 gap-4">
