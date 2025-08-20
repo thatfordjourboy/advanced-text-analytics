@@ -110,26 +110,44 @@ async def startup_event():
                 "startup.py"  # fallback to current directory
             ]
             
+            logger.info(f"🔍 Checking startup script paths: {startup_paths}")
+            
             startup_script = None
             for path in startup_paths:
-                if os.path.exists(path):
+                exists = os.path.exists(path)
+                logger.info(f"🔍 Path {path}: {'✅ EXISTS' if exists else '❌ NOT FOUND'}")
+                if exists:
                     startup_script = path
                     break
             
             if not startup_script:
                 logger.warning("⚠️  Startup script not found in any expected location")
+                logger.warning("⚠️  Current working directory: " + os.getcwd())
+                logger.warning("⚠️  Current directory contents: " + str(os.listdir('.')))
             else:
                 logger.info(f"🔧 Running startup script from: {startup_script}")
-                result = subprocess.run([
-                    sys.executable, 
-                    startup_script
-                ], capture_output=True, text=True, timeout=1800)  # 30 minute timeout
+                logger.info(f"🔧 Using Python executable: {sys.executable}")
                 
-                if result.returncode == 0:
-                    logger.info("✅ Data setup completed successfully")
-                    logger.info(f"Startup output: {result.stdout}")
-                else:
-                    logger.warning(f"⚠️  Data setup had issues: {result.stderr}")
+                try:
+                    result = subprocess.run([
+                        sys.executable, 
+                        startup_script
+                    ], capture_output=True, text=True, timeout=1800)  # 30 minute timeout
+                    
+                    logger.info(f"🔧 Startup script execution completed with return code: {result.returncode}")
+                    logger.info(f"🔧 Startup script stdout: {result.stdout}")
+                    logger.info(f"🔧 Startup script stderr: {result.stderr}")
+                    
+                    if result.returncode == 0:
+                        logger.info("✅ Data setup completed successfully")
+                        logger.info(f"Startup output: {result.stdout}")
+                    else:
+                        logger.warning(f"⚠️  Data setup had issues: {result.stderr}")
+                        
+                except Exception as script_error:
+                    logger.error(f"❌ Error executing startup script: {script_error}")
+                    logger.error(f"❌ Script path: {startup_script}")
+                    logger.error(f"❌ Python executable: {sys.executable}")
                     
         except subprocess.TimeoutExpired:
             logger.error("❌ Data setup timed out after 30 minutes")
