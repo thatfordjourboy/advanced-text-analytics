@@ -59,10 +59,10 @@ class DataFileManager:
                 ],
                 "description": "GloVe embeddings (555MB) - Stanford NLP 2024"
             },
-            "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt": {
+            "glove_vectors.txt": {
                 "size_mb": 1600,
                 "sources": [],  # Will be extracted from zip
-                "description": "Extracted GloVe vectors (1.6GB)"
+                "description": "Extracted GloVe vectors (1.6GB) - filename discovered dynamically"
             },
             "dialogues.json": {
                 "size_mb": 45,
@@ -182,14 +182,21 @@ class DataFileManager:
                 else:
                     logger.info(f"  - {item.name} (directory)")
             
-            # Verify extraction
-            extracted_file = self.data_dir / "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"
-            logger.info(f"Checking for extracted file: {extracted_file}")
-            logger.info(f"Extracted file exists: {extracted_file.exists()}")
+            # Verify extraction by finding the actual extracted file
+            logger.info("Verifying extraction by discovering extracted files...")
             
-            if extracted_file.exists():
-                size_mb = extracted_file.stat().st_size / (1024 * 1024)
-                logger.info(f"GloVe vectors extracted successfully ({size_mb:.1f}MB)")
+            # Look for any .txt file that's large enough to be GloVe vectors
+            extracted_files = []
+            for item in self.data_dir.iterdir():
+                if item.is_file() and item.suffix == '.txt':
+                    size_mb = item.stat().st_size / (1024 * 1024)
+                    if size_mb > 100:  # GloVe vectors should be >100MB
+                        extracted_files.append((item, size_mb))
+            
+            if extracted_files:
+                # Use the largest .txt file (should be the GloVe vectors)
+                extracted_file, size_mb = max(extracted_files, key=lambda x: x[1])
+                logger.info(f"Found extracted GloVe vectors: {extracted_file.name} ({size_mb:.1f}MB)")
                 logger.info(f"Extraction verification: PASSED")
                 
                 # Additional verification - check if file is readable
@@ -204,11 +211,14 @@ class DataFileManager:
                 
                 return True
             else:
-                logger.error("Extracted file not found after extraction")
-                logger.error(f"Expected file: {extracted_file}")
+                logger.error("No extracted GloVe vector files found after extraction")
                 logger.error(f"Available files in {self.data_dir}:")
                 for item in self.data_dir.iterdir():
-                    logger.error(f"  - {item.name}")
+                    if item.is_file():
+                        size_mb = item.stat().st_size / (1024 * 1024)
+                        logger.info(f"  - {item.name} ({size_mb:.1f}MB)")
+                    else:
+                        logger.info(f"  - {item.name} (directory)")
                 logger.error("Extraction verification: FAILED")
                 return False
                 
@@ -290,7 +300,7 @@ class DataFileManager:
         # This ensures we don't have corrupted or incomplete extractions
         if existing_files["glove.2024.wikigiga.100d.zip"]:
             logger.info("GloVe zip exists - attempting extraction...")
-            logger.info("This will create/overwrite the wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt file...")
+            logger.info("This will create/overwrite the wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05.050_combined.txt file...")
             if not self.extract_glove_vectors():
                 logger.error("GloVe extraction failed!")
                 return False

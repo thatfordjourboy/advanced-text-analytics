@@ -34,7 +34,8 @@ class GloVeEmbeddings:
         
         # call GloVe vectors
         if dimension == 100:
-            self.txt_path = self.data_dir / "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"
+            # Dynamically discover the GloVe vectors file
+            self.txt_path = self._discover_glove_file()
         elif dimension == 300:
             self.txt_path = self.data_dir / "glove.2024.wikigiga.300d.txt"
         else:
@@ -112,6 +113,32 @@ class GloVeEmbeddings:
         
         self.loaded = True
         print(f"Loaded {len(self.embeddings)} word vectors successfully")
+    
+    def _discover_glove_file(self) -> Path:
+        """Dynamically discover the GloVe vectors file."""
+        print("Discovering GloVe vectors file...")
+        
+        # Look for any .txt file that's large enough to be GloVe vectors
+        glove_files = []
+        for item in self.data_dir.iterdir():
+            if item.is_file() and item.suffix == '.txt':
+                try:
+                    size_mb = item.stat().st_size / (1024 * 1024)
+                    if size_mb > 100:  # GloVe vectors should be >100MB
+                        glove_files.append((item, size_mb))
+                except Exception:
+                    continue
+        
+        if glove_files:
+            # Use the largest .txt file (should be the GloVe vectors)
+            glove_file, size_mb = max(glove_files, key=lambda x: x[1])
+            print(f"Found GloVe vectors: {glove_file.name} ({size_mb:.1f}MB)")
+            return glove_file
+        else:
+            # Fallback to hardcoded name if discovery fails
+            fallback_path = self.data_dir / "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05.050_combined.txt"
+            print(f"No GloVe vectors found, using fallback: {fallback_path}")
+            return fallback_path
     
     def get_text_vector(self, text: str) -> np.ndarray:
         """Get vector for text."""
