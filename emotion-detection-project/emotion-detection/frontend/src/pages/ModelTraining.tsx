@@ -106,6 +106,7 @@ const ModelTraining: React.FC = () => {
   // Refs for real-time updates
   const trainingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const dataPrepIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load export formats
   useEffect(() => {
@@ -173,6 +174,7 @@ const ModelTraining: React.FC = () => {
     return () => {
       if (trainingIntervalRef.current) clearInterval(trainingIntervalRef.current);
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (dataPrepIntervalRef.current) clearInterval(dataPrepIntervalRef.current);
     };
   }, []);
 
@@ -311,13 +313,53 @@ const ModelTraining: React.FC = () => {
       const response = await apiService.startDataPreparation();
       if (response.data) {
         setSuccess('Data preparation started successfully!');
-        fetchStatus();
+        
+        // Start continuous status polling to track progress
+        dataPrepIntervalRef.current = setInterval(async () => {
+          try {
+            const statusResponse = await apiService.getDataStatus();
+            if (statusResponse.data) {
+              const currentStatus = statusResponse.data.data_status;
+              setDataStatus(currentStatus);
+              
+              // Stop polling when preparation is complete or failed
+              if (currentStatus.status === 'completed' || currentStatus.status === 'failed') {
+                if (dataPrepIntervalRef.current) {
+                  clearInterval(dataPrepIntervalRef.current);
+                  dataPrepIntervalRef.current = null;
+                }
+                setIsPreparingData(false);
+                
+                if (currentStatus.status === 'completed') {
+                  setSuccess('Data preparation completed successfully! Data is ready for training.');
+                } else {
+                  setError('Data preparation failed. Please try again.');
+                }
+              }
+            }
+          } catch (err) {
+            console.error('Error polling data status:', err);
+          }
+        }, 2000); // Poll every 2 seconds
+        
+        // Set a timeout to stop polling after 5 minutes (300 seconds)
+        setTimeout(() => {
+          if (dataPrepIntervalRef.current) {
+            clearInterval(dataPrepIntervalRef.current);
+            dataPrepIntervalRef.current = null;
+          }
+          if (isPreparingData) {
+            setIsPreparingData(false);
+            setError('Data preparation timed out. Please check the backend logs.');
+          }
+        }, 300000);
+        
       } else {
         setError(response.error || 'Failed to start data preparation');
+        setIsPreparingData(false);
       }
     } catch (err) {
       setError('Error starting data preparation');
-    } finally {
       setIsPreparingData(false);
     }
   };
