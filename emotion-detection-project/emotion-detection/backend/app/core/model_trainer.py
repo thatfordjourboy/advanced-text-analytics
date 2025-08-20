@@ -168,6 +168,7 @@ class MultiLabelEmotionTrainer:
             # Store test data for final evaluation
             self.test_data = test_data
             
+            # Store training data
             self.X_train = X_train
             self.y_train = y_train
             self.X_val = X_val
@@ -181,20 +182,37 @@ class MultiLabelEmotionTrainer:
             # Balance training data if augmentation is enabled
             if self.augmentation_enabled:
                 logger.info("Balancing training data to handle class imbalance...")
-                X_train_balanced, y_train_balanced = self._balance_training_data(X_train, y_train)
-                self.X_train = X_train_balanced
-                self.y_train = y_train_balanced
-                logger.info(f"✅ Balanced training data: X_train {X_train_balanced.shape}, y_train {y_train_balanced.shape}")
+                try:
+                    X_train_balanced, y_train_balanced = self._balance_training_data(X_train, y_train)
+                    self.X_train = X_train_balanced
+                    self.y_train = y_train_balanced
+                    logger.info(f"✅ Balanced training data: X_train {X_train_balanced.shape}, y_train {y_train_balanced.shape}")
+                    
+                    # Clean up original data to free memory
+                    del X_train, y_train
+                    
+                except Exception as e:
+                    logger.error(f"Data balancing failed, using original data: {e}")
+                    # Keep original data if balancing fails
+                    pass
             
             return True
             
         except Exception as e:
             logger.error(f"Error preparing training data: {e}")
+            # Clean up any partial data on error
+            try:
+                self.X_train = None
+                self.y_train = None
+                self.X_val = None
+                self.y_val = None
+            except:
+                pass
             raise
     
     def _balance_training_data(self, X_train: np.ndarray, y_train: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Balance training data to handle class imbalance using simple oversampling.
+        Balance training data to handle class imbalance using memory-efficient oversampling.
         
         Args:
             X_train: Training features
@@ -215,18 +233,22 @@ class MultiLabelEmotionTrainer:
             majority_class = max(class_counts, key=class_counts.get)
             majority_count = class_counts[majority_class]
             
-            # Target count for each class (use majority class as baseline)
-            target_count = majority_count
+            # Use a more reasonable target count to prevent memory explosion
+            # Instead of oversampling to 72K, use a more balanced approach
+            target_count = min(majority_count, 20000)  # Cap at 20K per class
             
-            # Oversample minority classes
+            logger.info(f"Target count per class: {target_count} (capped to prevent memory issues)")
+            
+            # Memory-efficient oversampling
             X_balanced = []
             y_balanced = []
             
             for class_label in np.unique(y_train):
                 class_indices = np.where(y_train == class_label)[0]
                 class_samples = X_train[class_indices]
+                current_count = len(class_samples)
                 
-                if len(class_samples) < target_count:
+                if current_count < target_count:
                     # Oversample this class
                     oversampled_indices = resample(
                         class_indices,
@@ -236,14 +258,29 @@ class MultiLabelEmotionTrainer:
                     )
                     X_balanced.extend(X_train[oversampled_indices])
                     y_balanced.extend(y_train[oversampled_indices])
-                    logger.info(f"Oversampled class {class_label}: {len(class_samples)} -> {target_count}")
+                    logger.info(f"Oversampled class {class_label}: {current_count} -> {target_count}")
                 else:
-                    # Use all samples for this class
-                    X_balanced.extend(class_samples)
-                    y_balanced.extend(y_train[class_indices])
+                    # Use all samples for this class (or downsample if too many)
+                    if current_count > target_count:
+                        # Downsample to target count
+                        downsample_indices = np.random.choice(
+                            class_indices, 
+                            size=target_count, 
+                            replace=False,
+                            random_state=42
+                        )
+                        X_balanced.extend(X_train[downsample_indices])
+                        y_balanced.extend(y_train[downsample_indices])
+                        logger.info(f"Downsampled class {class_label}: {current_count} -> {target_count}")
+                    else:
+                        # Use all samples for this class
+                        X_balanced.extend(class_samples)
+                        y_balanced.extend(y_train[class_indices])
+                        logger.info(f"Used all samples for class {class_label}: {current_count}")
             
-            X_balanced = np.array(X_balanced)
-            y_balanced = np.array(y_balanced)
+            # Convert to numpy arrays
+            X_balanced = np.array(X_balanced, dtype=X_train.dtype)
+            y_balanced = np.array(y_balanced, dtype=y_train.dtype)
             
             # Shuffle the balanced data
             shuffle_indices = np.random.permutation(len(X_balanced))
@@ -252,11 +289,17 @@ class MultiLabelEmotionTrainer:
             
             balanced_counts = Counter(y_balanced)
             logger.info(f"Balanced class distribution: {dict(balanced_counts)}")
+            logger.info(f"Total balanced samples: {len(X_balanced)} (vs original {len(X_train)})")
+            
+            # Memory usage info
+            memory_mb = (X_balanced.nbytes + y_balanced.nbytes) / (1024 * 1024)
+            logger.info(f"Balanced data memory usage: {memory_mb:.1f}MB")
             
             return X_balanced, y_balanced
             
         except Exception as e:
             logger.error(f"Data balancing failed: {e}")
+            logger.warning("Returning original data without balancing to prevent crash")
             # Return original data if balancing fails
             return X_train, y_train
     
@@ -360,20 +403,29 @@ class MultiLabelEmotionTrainer:
         logger.info("Training Random Forest model...")
         
         try:
+            # Log memory usage before training
+            self._log_memory_usage("before Random Forest training")
+            
             # Create OneVsRest classifier for multi-label
             base_rf = RandomForestClassifier(**self.rf_params)
             self.random_forest = OneVsRestClassifier(base_rf)
             
             # Train the model
             start_time = datetime.now()
+            logger.info("Starting Random Forest training...")
             self.random_forest.fit(X_train, y_train)
             training_time = (datetime.now() - start_time).total_seconds()
             
+            # Log memory usage after training
+            self._log_memory_usage("after Random Forest training")
+            
             # Make predictions
+            logger.info("Making predictions on validation set...")
             y_pred = self.random_forest.predict(X_val)
             y_pred_proba = self.random_forest.predict_proba(X_val)
             
             # Evaluate performance
+            logger.info("Evaluating model performance...")
             metrics = self._evaluate_model(y_val, y_pred, y_pred_proba, 'random_forest')
             
             # Store results
@@ -594,26 +646,79 @@ class MultiLabelEmotionTrainer:
         return results
     
     def _load_existing_models(self):
-        """Load existing models if available."""
+        """Load existing trained models if available."""
         try:
-            lr_path = self.models_dir / 'logistic_regression.pkl'
-            rf_path = self.models_dir / 'random_forest.pkl'
-            binarizer_path = self.models_dir / 'label_binarizer.pkl'
-            
-            if lr_path.exists():
-                self.logistic_regression = joblib.load(lr_path)
-                logger.info("Logistic Regression model loaded from disk")
-            
+            # Load Random Forest model
+            rf_path = self.models_dir / "random_forest.pkl"
             if rf_path.exists():
                 self.random_forest = joblib.load(rf_path)
-                logger.info("Random Forest model loaded from disk")
+                logger.info("Random Forest model loaded successfully")
             
-            if binarizer_path.exists():
-                self.label_binarizer = joblib.load(binarizer_path)
-                logger.info("Label binarizer loaded from disk")
-            
+            # Load Logistic Regression model
+            lr_path = self.models_dir / "logistic_regression.pkl"
+            if lr_path.exists():
+                self.logistic_regression = joblib.load(lr_path)
+                logger.info("Logistic Regression model loaded successfully")
+                
         except Exception as e:
             logger.error(f"Failed to load existing models: {e}")
+    
+    def _get_memory_usage(self) -> float:
+        """Get current memory usage in MB."""
+        try:
+            import psutil
+            process = psutil.Process()
+            memory_mb = process.memory_info().rss / (1024 * 1024)
+            return round(memory_mb, 2)
+        except ImportError:
+            return 0.0
+    
+    def _log_memory_usage(self, stage: str):
+        """Log memory usage at different stages."""
+        try:
+            memory_mb = self._get_memory_usage()
+            logger.info(f"Memory usage at {stage}: {memory_mb}MB")
+        except:
+            pass
+    
+    def cleanup_training_data(self):
+        """Clean up training data to free memory."""
+        try:
+            if hasattr(self, 'X_train') and self.X_train is not None:
+                del self.X_train
+                self.X_train = None
+                logger.info("Cleaned up X_train")
+            
+            if hasattr(self, 'y_train') and self.y_train is not None:
+                del self.y_train
+                self.y_train = None
+                logger.info("Cleaned up y_train")
+            
+            if hasattr(self, 'X_val') and self.X_val is not None:
+                del self.X_val
+                self.X_val = None
+                logger.info("Cleaned up X_val")
+            
+            if hasattr(self, 'y_val') and self.y_val is not None:
+                del self.y_val
+                self.y_val = None
+                logger.info("Cleaned up y_val")
+            
+            # Force garbage collection
+            import gc
+            gc.collect()
+            
+            logger.info("Training data cleanup completed")
+            
+        except Exception as e:
+            logger.error(f"Error during cleanup: {e}")
+    
+    def __del__(self):
+        """Cleanup when object is destroyed."""
+        try:
+            self.cleanup_training_data()
+        except:
+            pass
     
     def get_training_status(self) -> Dict[str, Any]:
         """Get training status and model availability."""

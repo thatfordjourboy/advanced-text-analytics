@@ -508,13 +508,40 @@ async def start_random_forest_training():
         if not data_loader.loaded or not embeddings.loaded:
             raise HTTPException(status_code=400, detail="Data not ready. Please ensure data and embeddings are loaded.")
         
-        # Start training in background thread
+        # Check if training is already in progress
+        if hasattr(model_trainer, 'current_training') and model_trainer.current_training:
+            return {
+                "message": "Training already in progress", 
+                "status": "already_running", 
+                "model_type": "random_forest"
+            }
+        
+        # Start training in background thread with proper tracking
         import threading
         
         def train_rf():
             try:
+                # Set training status
+                model_trainer.current_training = {
+                    'status': 'training',
+                    'progress': 0,
+                    'message': 'Preparing training data...',
+                    'model_type': 'random_forest',
+                    'start_time': time.time(),
+                    'current_epoch': 0,
+                    'total_epochs': 1
+                }
+                
+                # Update progress
+                model_trainer.current_training['progress'] = 10
+                model_trainer.current_training['message'] = 'Preparing training data...'
+                
                 # Prepare training data
                 model_trainer.prepare_training_data(data_loader, embeddings, text_processor)
+                
+                # Update progress
+                model_trainer.current_training['progress'] = 30
+                model_trainer.current_training['message'] = 'Training Random Forest model...'
                 
                 # Get prepared data
                 X_train = model_trainer.X_train
@@ -525,17 +552,66 @@ async def start_random_forest_training():
                 if X_train is None or y_train is None:
                     raise ValueError("Training data not prepared properly")
                 
+                # Update progress
+                model_trainer.current_training['progress'] = 50
+                model_trainer.current_training['message'] = 'Training Random Forest model...'
+                
                 # Train the model
                 result = model_trainer.train_random_forest(X_train, y_train, X_val, y_val)
+                
+                # Update progress
+                model_trainer.current_training['progress'] = 90
+                model_trainer.current_training['message'] = 'Saving model...'
                 
                 # Save the trained model
                 if result['status'] == 'success':
                     model_path = models_dir / "random_forest.pkl"
                     joblib.dump(model_trainer.random_forest, model_path)
                     logger.info(f"Random Forest model saved to {model_path}")
+                    
+                    # Update progress
+                    model_trainer.current_training['progress'] = 100
+                    model_trainer.current_training['message'] = 'Training completed successfully!'
+                    model_trainer.current_training['status'] = 'completed'
+                    
+                    # Store results
+                    model_trainer.training_results['random_forest'] = result
+                    
+                    # Clean up training data to free memory
+                    model_trainer.X_train = None
+                    model_trainer.y_train = None
+                    model_trainer.X_val = None
+                    model_trainer.y_val = None
+                    
+                    logger.info("Random Forest training completed and memory cleaned up")
+                else:
+                    # Training failed
+                    model_trainer.current_training['status'] = 'failed'
+                    model_trainer.current_training['message'] = f'Training failed: {result.get("error", "Unknown error")}'
+                    logger.error(f"Random Forest training failed: {result}")
                 
             except Exception as e:
                 logger.error(f"Random Forest training failed: {e}")
+                model_trainer.current_training['status'] = 'failed'
+                model_trainer.current_training['message'] = f'Training failed: {str(e)}'
+                
+                # Clean up on error
+                try:
+                    model_trainer.X_train = None
+                    model_trainer.y_train = None
+                    model_trainer.X_val = None
+                    model_trainer.y_val = None
+                except:
+                    pass
+            finally:
+                # Always clean up training status after a delay
+                def cleanup():
+                    time.sleep(10)  # Keep status for 10 seconds
+                    model_trainer.current_training = None
+                
+                cleanup_thread = threading.Thread(target=cleanup)
+                cleanup_thread.daemon = True
+                cleanup_thread.start()
         
         # Start training in background
         training_thread = threading.Thread(target=train_rf)
@@ -559,13 +635,40 @@ async def start_logistic_regression_training():
         if not data_loader.loaded or not embeddings.loaded:
             raise HTTPException(status_code=400, detail="Data not ready. Please ensure data and embeddings are loaded.")
         
-        # Start training in background thread
+        # Check if training is already in progress
+        if hasattr(model_trainer, 'current_training') and model_trainer.current_training:
+            return {
+                "message": "Training already in progress", 
+                "status": "already_running", 
+                "model_type": "logistic_regression"
+            }
+        
+        # Start training in background thread with proper tracking
         import threading
         
         def train_lr():
             try:
+                # Set training status
+                model_trainer.current_training = {
+                    'status': 'training',
+                    'progress': 0,
+                    'message': 'Preparing training data...',
+                    'model_type': 'logistic_regression',
+                    'start_time': time.time(),
+                    'current_epoch': 0,
+                    'total_epochs': 1
+                }
+                
+                # Update progress
+                model_trainer.current_training['progress'] = 10
+                model_trainer.current_training['message'] = 'Preparing training data...'
+                
                 # Prepare training data
                 model_trainer.prepare_training_data(data_loader, embeddings, text_processor)
+                
+                # Update progress
+                model_trainer.current_training['progress'] = 30
+                model_trainer.current_training['message'] = 'Training Logistic Regression model...'
                 
                 # Get prepared data
                 X_train = model_trainer.X_train
@@ -576,17 +679,66 @@ async def start_logistic_regression_training():
                 if X_train is None or y_train is None:
                     raise ValueError("Training data not prepared properly")
                 
+                # Update progress
+                model_trainer.current_training['progress'] = 50
+                model_trainer.current_training['message'] = 'Training Logistic Regression model...'
+                
                 # Train the model
                 result = model_trainer.train_logistic_regression(X_train, y_train, X_val, y_val)
+                
+                # Update progress
+                model_trainer.current_training['progress'] = 90
+                model_trainer.current_training['message'] = 'Saving model...'
                 
                 # Save the trained model
                 if result['status'] == 'success':
                     model_path = models_dir / "logistic_regression.pkl"
                     joblib.dump(model_trainer.logistic_regression, model_path)
                     logger.info(f"Logistic Regression model saved to {model_path}")
+                    
+                    # Update progress
+                    model_trainer.current_training['progress'] = 100
+                    model_trainer.current_training['message'] = 'Training completed successfully!'
+                    model_trainer.current_training['status'] = 'completed'
+                    
+                    # Store results
+                    model_trainer.training_results['logistic_regression'] = result
+                    
+                    # Clean up training data to free memory
+                    model_trainer.X_train = None
+                    model_trainer.y_train = None
+                    model_trainer.X_val = None
+                    model_trainer.y_val = None
+                    
+                    logger.info("Logistic Regression training completed and memory cleaned up")
+                else:
+                    # Training failed
+                    model_trainer.current_training['status'] = 'failed'
+                    model_trainer.current_training['message'] = f'Training failed: {result.get("error", "Unknown error")}'
+                    logger.error(f"Logistic Regression training failed: {result}")
                 
             except Exception as e:
                 logger.error(f"Logistic Regression training failed: {e}")
+                model_trainer.current_training['status'] = 'failed'
+                model_trainer.current_training['message'] = f'Training failed: {str(e)}'
+                
+                # Clean up on error
+                try:
+                    model_trainer.X_train = None
+                    model_trainer.y_train = None
+                    model_trainer.X_val = None
+                    model_trainer.y_val = None
+                except:
+                    pass
+            finally:
+                # Always clean up training status after a delay
+                def cleanup():
+                    time.sleep(10)  # Keep status for 10 seconds
+                    model_trainer.current_training = None
+                
+                cleanup_thread = threading.Thread(target=cleanup)
+                cleanup_thread.daemon = True
+                cleanup_thread.start()
         
         # Start training in background
         training_thread = threading.Thread(target=train_lr)
@@ -637,12 +789,17 @@ async def get_training_progress():
         if hasattr(model_trainer, 'current_training') and model_trainer.current_training:
             training_info = model_trainer.current_training
             
+            # Calculate elapsed time
+            elapsed_time = 0
+            if 'start_time' in training_info:
+                elapsed_time = time.time() - training_info['start_time']
+            
             return {
-                "status": "training",
+                "status": training_info.get('status', 'training'),
                 "progress": training_info.get('progress', 0),
                 "message": training_info.get('message', 'Training in progress...'),
                 "model_type": training_info.get('model_type', 'unknown'),
-                "elapsed_time": training_info.get('elapsed_time', 0),
+                "elapsed_time": round(elapsed_time, 2),
                 "current_epoch": training_info.get('current_epoch', 0),
                 "total_epochs": training_info.get('total_epochs', 1)
             }
