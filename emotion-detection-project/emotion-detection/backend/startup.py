@@ -236,8 +236,14 @@ class DataFileManager:
         # Extract GloVe vectors if zip exists but extracted file doesn't
         if (existing_files["glove.2024.wikigiga.100d.zip"] and 
             not existing_files["wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"]):
+            logger.info("📦 GloVe zip exists but extracted file missing - extracting now...")
+            logger.info("📦 This will create the 1.6GB wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt file...")
             if not self.extract_glove_vectors():
+                logger.error("❌ GloVe extraction failed!")
                 return False
+            logger.info("📦 GloVe extraction completed - re-checking files...")
+            # Re-check files after extraction
+            existing_files = self.check_files_exist()
         
         # Create sample files if missing
         if not existing_files["dialogues.json"] or not existing_files["ontology.json"]:
