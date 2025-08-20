@@ -103,18 +103,34 @@ async def startup_event():
         import sys
         
         try:
-            # Run startup script
-            result = subprocess.run([
-                sys.executable, 
-                "/app/startup.py"
-            ], capture_output=True, text=True, timeout=1800)  # 30 minute timeout
+            # Run startup script - try multiple possible paths
+            startup_paths = [
+                "/app/startup.py",
+                "/opt/render/project/src/emotion-detection-project/emotion-detection/backend/startup.py",
+                "startup.py"  # fallback to current directory
+            ]
             
-            if result.returncode == 0:
-                logger.info("✅ Data setup completed successfully")
-                logger.info(f"Startup output: {result.stdout}")
+            startup_script = None
+            for path in startup_paths:
+                if os.path.exists(path):
+                    startup_script = path
+                    break
+            
+            if not startup_script:
+                logger.warning("⚠️  Startup script not found in any expected location")
             else:
-                logger.warning(f"⚠️  Data setup had issues: {result.stderr}")
+                logger.info(f"🔧 Running startup script from: {startup_script}")
+                result = subprocess.run([
+                    sys.executable, 
+                    startup_script
+                ], capture_output=True, text=True, timeout=1800)  # 30 minute timeout
                 
+                if result.returncode == 0:
+                    logger.info("✅ Data setup completed successfully")
+                    logger.info(f"Startup output: {result.stdout}")
+                else:
+                    logger.warning(f"⚠️  Data setup had issues: {result.stderr}")
+                    
         except subprocess.TimeoutExpired:
             logger.error("❌ Data setup timed out after 30 minutes")
         except Exception as e:

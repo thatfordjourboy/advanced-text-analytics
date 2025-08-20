@@ -225,8 +225,11 @@ def main():
     """Main startup function."""
     logger.info("🚀 Starting Emotion Detection Backend data setup...")
     
-    # Check if we're on Render
-    if not os.path.exists("/app"):
+    # Check if we're on Render (multiple possible paths)
+    render_paths = ["/app", "/opt/render/project/src", "/opt/render/project/src/emotion-detection-project/emotion-detection/backend"]
+    is_render = any(os.path.exists(path) for path in render_paths)
+    
+    if not is_render:
         logger.info("ℹ️  Not on Render, skipping data setup")
         return True
     
