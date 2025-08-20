@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: emotion-detection-backend
+    env: docker
+    dockerfilePath: ./emotion-detection-project/emotion-detection/backend/Dockerfile
+    dockerContext: ./emotion-detection-project/emotion-detection/backend
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: PYTHONPATH
+        value: /app
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: false
+      - key: PORT
+        value: 8000
+    healthCheckPath: /health
+    autoDeploy: true
+    instanceType: standard-1x
