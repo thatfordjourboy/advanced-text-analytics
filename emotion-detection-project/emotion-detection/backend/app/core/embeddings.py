@@ -11,8 +11,26 @@ class GloVeEmbeddings:
         self.embeddings = {}
         self.loaded = False
         
-        # File paths - vectors already in data directory
-        self.data_dir = Path(__file__).parent.parent.parent / "data"
+        # File paths - use the same data directory logic as startup.py
+        # Try multiple possible data directory paths (same as startup.py)
+        possible_paths = [
+            Path("/app/data"),  # Render persistent disk path
+            Path("/opt/render/project/src/emotion-detection-project/emotion-detection/backend/data"),  # Render source path
+            Path("data"),  # Local development path
+            Path("/tmp/data"),  # Temporary path as fallback
+        ]
+        
+        self.data_dir = None
+        for path in possible_paths:
+            if path.exists():
+                self.data_dir = path
+                break
+        
+        if self.data_dir is None:
+            # Fallback to current directory
+            self.data_dir = Path(__file__).parent.parent.parent / "data"
+        
+        print(f"Embeddings module using data directory: {self.data_dir}")
         
         # call GloVe vectors
         if dimension == 100:
@@ -27,15 +45,16 @@ class GloVeEmbeddings:
         """Load pre-downloaded 2024 GloVe embeddings."""
         try:
             if not self.txt_path.exists():
-                print(f"❌ GloVe file not found: {self.txt_path.name}")
-                print("📥 Please download the 2024 vectors from Stanford:")
-                print("🔗 https://nlp.stanford.edu/data/wordvecs/glove.2024.wikigiga.100d.zip")
+                print(f"ERROR: GloVe file not found: {self.txt_path.name}")
+                print(f"File path: {self.txt_path}")
+                print("Please download the 2024 vectors from Stanford:")
+                print("URL: https://nlp.stanford.edu/data/wordvecs/glove.2024.wikigiga.100d.zip")
                 if self.dimension == 100:
-                    print("📁 Download: glove.2024.wikigiga.100d.zip (555 MB)")
+                    print("File: glove.2024.wikigiga.100d.zip (555 MB)")
                 elif self.dimension == 300:
-                    print("📁 Download: glove.2024.wikigiga.300d.zip (1.6 GB)")
-                print("📂 Extract to: backend/data/ directory")
-                print("💡 Note: The startup script should handle this automatically on Render")
+                    print("File: glove.2024.wikigiga.300d.zip (1.6 GB)")
+                print("Extract to: backend/data/ directory")
+                print("Note: The startup script should handle this automatically on Render")
                 return False
             
             # Load embeddings
@@ -49,7 +68,7 @@ class GloVeEmbeddings:
     def _load_from_file(self):
         """Load embeddings from text file."""
         print(f"Loading {self.dimension}d vectors from {self.txt_path.name}...")
-        print("✅ Using 2024 GloVe vectors")
+        print("Using 2024 GloVe vectors")
         
         with open(self.txt_path, 'r', encoding='utf-8') as f:
             for line in f:
@@ -79,7 +98,7 @@ class GloVeEmbeddings:
                     continue  # Skip problematic lines
         
         self.loaded = True
-        print(f"✅ Loaded {len(self.embeddings)} word vectors")
+        print(f"Loaded {len(self.embeddings)} word vectors successfully")
     
     def get_text_vector(self, text: str) -> np.ndarray:
         """Get vector for text."""

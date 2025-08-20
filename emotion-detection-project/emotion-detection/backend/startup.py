@@ -34,10 +34,10 @@ class DataFileManager:
             try:
                 path.mkdir(parents=True, exist_ok=True)
                 self.data_dir = path
-                logger.info(f"✅ Using data directory: {path}")
+                logger.info(f"Using data directory: {path}")
                 break
             except Exception as e:
-                logger.warning(f"⚠️  Failed to create/use {path}: {e}")
+                logger.warning(f"Failed to create/use {path}: {e}")
                 continue
         
         if self.data_dir is None:
@@ -77,16 +77,16 @@ class DataFileManager:
             existing_files[filename] = file_path.exists()
             if existing_files[filename]:
                 size_mb = file_path.stat().st_size / (1024 * 1024)
-                logger.info(f"✅ {filename} exists ({size_mb:.1f}MB)")
+                logger.info(f"{filename} exists ({size_mb:.1f}MB)")
             else:
-                logger.info(f"❌ {filename} missing")
+                logger.info(f"{filename} missing")
         return existing_files
     
     def download_file(self, url: str, filename: str) -> bool:
         """Download a file with progress tracking."""
         try:
             file_path = self.data_dir / filename
-            logger.info(f"📥 Downloading {filename} from {url}")
+            logger.info(f"Downloading {filename} from {url}")
             
             # Stream download with progress
             response = requests.get(url, stream=True)
@@ -106,15 +106,15 @@ class DataFileManager:
                             mb_downloaded = downloaded / (1024 * 1024)
                             if total_size > 0:
                                 progress = (downloaded / total_size) * 100
-                                logger.info(f"📊 {filename}: {mb_downloaded:.1f}MB ({progress:.1f}%)")
+                                logger.info(f"{filename}: {mb_downloaded:.1f}MB ({progress:.1f}%)")
                             else:
-                                logger.info(f"📊 {filename}: {mb_downloaded:.1f}MB downloaded")
+                                logger.info(f"{filename}: {mb_downloaded:.1f}MB downloaded")
             
-            logger.info(f"✅ {filename} downloaded successfully")
+            logger.info(f"{filename} downloaded successfully")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Failed to download {filename}: {e}")
+            logger.error(f"Failed to download {filename}: {e}")
             return False
     
     def extract_glove_vectors(self) -> bool:
@@ -122,51 +122,51 @@ class DataFileManager:
         try:
             zip_path = self.data_dir / "glove.2024.wikigiga.100d.zip"
             if not zip_path.exists():
-                logger.error("❌ GloVe zip file not found")
+                logger.error("GloVe zip file not found")
                 return False
             
-            logger.info(f"📦 Extracting GloVe vectors from: {zip_path}")
-            logger.info(f"📦 Extracting to directory: {self.data_dir}")
+            logger.info(f"Extracting GloVe vectors from: {zip_path}")
+            logger.info(f"Extracting to directory: {self.data_dir}")
             
             # List contents of zip file first
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                 file_list = zip_ref.namelist()
-                logger.info(f"📦 Zip file contains {len(file_list)} files:")
+                logger.info(f"Zip file contains {len(file_list)} files:")
                 for file in file_list:
-                    logger.info(f"📦   - {file}")
+                    logger.info(f"  - {file}")
                 
-                logger.info("📦 Starting extraction...")
+                logger.info("Starting extraction...")
                 zip_ref.extractall(self.data_dir)
-                logger.info("📦 Extraction completed")
+                logger.info("Extraction completed")
             
             # List directory contents after extraction
-            logger.info(f"📦 Directory contents after extraction:")
+            logger.info(f"Directory contents after extraction:")
             for item in self.data_dir.iterdir():
                 if item.is_file():
                     size_mb = item.stat().st_size / (1024 * 1024)
-                    logger.info(f"📦   - {item.name} ({size_mb:.1f}MB)")
+                    logger.info(f"  - {item.name} ({size_mb:.1f}MB)")
                 else:
-                    logger.info(f"📦   - {item.name} (directory)")
+                    logger.info(f"  - {item.name} (directory)")
             
             # Verify extraction
             extracted_file = self.data_dir / "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"
             if extracted_file.exists():
                 size_mb = extracted_file.stat().st_size / (1024 * 1024)
-                logger.info(f"✅ GloVe vectors extracted successfully ({size_mb:.1f}MB)")
+                logger.info(f"GloVe vectors extracted successfully ({size_mb:.1f}MB)")
                 return True
             else:
-                logger.error("❌ Extracted file not found after extraction")
-                logger.error(f"❌ Expected file: {extracted_file}")
-                logger.error(f"❌ Available files in {self.data_dir}:")
+                logger.error("Extracted file not found after extraction")
+                logger.error(f"Expected file: {extracted_file}")
+                logger.error(f"Available files in {self.data_dir}:")
                 for item in self.data_dir.iterdir():
-                    logger.error(f"❌   - {item.name}")
+                    logger.error(f"  - {item.name}")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ Failed to extract GloVe vectors: {e}")
-            logger.error(f"❌ Error type: {type(e).__name__}")
+            logger.error(f"Failed to extract GloVe vectors: {e}")
+            logger.error(f"Error type: {type(e).__name__}")
             import traceback
-            logger.error(f"❌ Full traceback: {traceback.format_exc()}")
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             return False
     
     def create_sample_files(self) -> bool:
@@ -175,7 +175,7 @@ class DataFileManager:
             # Create sample dialogues.json
             dialogues_path = self.data_dir / "dialogues.json"
             if not dialogues_path.exists():
-                logger.info("📝 Creating sample dialogues.json...")
+                logger.info("Creating sample dialogues.json...")
                 sample_dialogues = [
                     {
                         "dialogue_id": "sample_1",
@@ -194,12 +194,12 @@ class DataFileManager:
                 import json
                 with open(dialogues_path, 'w') as f:
                     json.dump(sample_dialogues, f, indent=2)
-                logger.info("✅ Created sample dialogues.json")
+                logger.info("Created sample dialogues.json")
             
             # Create ontology.json
             ontology_path = self.data_dir / "ontology.json"
             if not ontology_path.exists():
-                logger.info("📝 Creating ontology.json...")
+                logger.info("Creating ontology.json...")
                 ontology = {
                     "emotions": [
                         "anger", "disgust", "fear", "happiness", 
@@ -209,12 +209,12 @@ class DataFileManager:
                 
                 with open(ontology_path, 'w') as f:
                     json.dump(ontology, f, indent=2)
-                logger.info("✅ Created ontology.json")
+                logger.info("Created ontology.json")
             
             return True
             
         except Exception as e:
-            logger.error(f"❌ Failed to create sample files: {e}")
+            logger.error(f"Failed to create sample files: {e}")
             return False
     
     def download_required_files(self) -> bool:
@@ -223,25 +223,25 @@ class DataFileManager:
         
         # Download GloVe vectors if missing
         if not existing_files["glove.2024.wikigiga.100d.zip"]:
-            logger.info("🚀 First time setup: Downloading GloVe vectors...")
+            logger.info("First time setup: Downloading GloVe vectors...")
             
             # Try multiple sources
             for source in self.required_files["glove.2024.wikigiga.100d.zip"]["sources"]:
                 if self.download_file(source, "glove.2024.wikigiga.100d.zip"):
                     break
             else:
-                logger.error("❌ Failed to download GloVe vectors from all sources")
+                logger.error("Failed to download GloVe vectors from all sources")
                 return False
         
         # Extract GloVe vectors if zip exists but extracted file doesn't
         if (existing_files["glove.2024.wikigiga.100d.zip"] and 
             not existing_files["wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"]):
-            logger.info("📦 GloVe zip exists but extracted file missing - extracting now...")
-            logger.info("📦 This will create the 1.6GB wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt file...")
+            logger.info("GloVe zip exists but extracted file missing - extracting now...")
+            logger.info("This will create the 1.6GB wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt file...")
             if not self.extract_glove_vectors():
-                logger.error("❌ GloVe extraction failed!")
+                logger.error("GloVe extraction failed!")
                 return False
-            logger.info("📦 GloVe extraction completed - re-checking files...")
+                          logger.info("GloVe extraction completed - re-checking files...")
             # Re-check files after extraction
             existing_files = self.check_files_exist()
         
@@ -254,7 +254,7 @@ class DataFileManager:
     
     def verify_all_files(self) -> bool:
         """Verify all required files are present and accessible."""
-        logger.info("🔍 Verifying all required files...")
+        logger.info("Verifying all required files...")
         
         for filename, info in self.required_files.items():
             file_path = self.data_dir / filename
@@ -263,17 +263,17 @@ class DataFileManager:
                 return False
             
             size_mb = file_path.stat().st_size / (1024 * 1024)
-            logger.info(f"✅ {filename}: {size_mb:.1f}MB")
+            logger.info(f"{filename}: {size_mb:.1f}MB")
         
         total_size = sum((self.data_dir / f).stat().st_size for f in self.required_files)
         total_size_mb = total_size / (1024 * 1024)
-        logger.info(f"📊 Total data directory size: {total_size_mb:.1f}MB")
+        logger.info(f"Total data directory size: {total_size_mb:.1f}MB")
         
         return True
 
 def main():
     """Main startup function."""
-    logger.info("🚀 Starting Emotion Detection Backend data setup...")
+            logger.info("Starting Emotion Detection Backend data setup...")
     
     # Check if we're on Render (multiple possible paths)
     render_paths = ["/app", "/opt/render/project/src", "/opt/render/project/src/emotion-detection-project/emotion-detection/backend"]
@@ -296,7 +296,7 @@ def main():
         logger.error("❌ File verification failed")
         return False
     
-    logger.info("🎉 Data setup completed successfully!")
+            logger.info("Data setup completed successfully!")
     return True
 
 if __name__ == "__main__":

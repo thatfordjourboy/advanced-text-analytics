@@ -76,18 +76,18 @@ def load_trained_models():
         rf_path = models_dir / "random_forest.pkl"
         if rf_path.exists():
             models['random_forest'] = joblib.load(rf_path)
-            logger.info("✅ Random Forest model loaded successfully")
+            logger.info("Random Forest model loaded successfully")
         
         # Load Logistic Regression model
         lr_path = models_dir / "logistic_regression.pkl"
         if lr_path.exists():
             models['logistic_regression'] = joblib.load(lr_path)
-            logger.info("✅ Logistic Regression model loaded successfully")
+            logger.info("Logistic Regression model loaded successfully")
         
-        logger.info(f"✅ Loaded {len(models)} trained models")
+        logger.info(f"Loaded {len(models)} trained models")
         return models
     except Exception as e:
-        logger.error(f"❌ Failed to load models: {e}")
+        logger.error(f"Failed to load models: {e}")
         return {}
 
 # Load models on startup
@@ -97,7 +97,7 @@ trained_models = {}
 def force_startup():
     """Force startup script execution during module import."""
     try:
-        logger.info("🚀 FORCING startup script execution...")
+        logger.info("FORCING startup script execution...")
         import subprocess
         import sys
         
@@ -108,23 +108,23 @@ def force_startup():
             "startup.py"  # fallback to current directory
         ]
         
-        logger.info(f"🔍 Checking startup script paths: {startup_paths}")
+        logger.info(f"Checking startup script paths: {startup_paths}")
         
         startup_script = None
         for path in startup_paths:
             exists = os.path.exists(path)
-            logger.info(f"🔍 Path {path}: {'✅ EXISTS' if exists else '❌ NOT FOUND'}")
+            logger.info(f"Path {path}: {'EXISTS' if exists else 'NOT FOUND'}")
             if exists:
                 startup_script = path
                 break
         
         if not startup_script:
-            logger.warning("⚠️  Startup script not found in any expected location")
-            logger.warning("⚠️  Current working directory: " + os.getcwd())
-            logger.warning("⚠️  Current directory contents: " + str(os.listdir('.')))
+            logger.warning("Startup script not found in any expected location")
+            logger.warning("Current working directory: " + os.getcwd())
+            logger.warning("Current directory contents: " + str(os.listdir('.')))
         else:
-            logger.info(f"🔧 Running startup script from: {startup_script}")
-            logger.info(f"🔧 Using Python executable: {sys.executable}")
+            logger.info(f"Running startup script from: {startup_script}")
+            logger.info(f"Using Python executable: {sys.executable}")
             
             try:
                 result = subprocess.run([
@@ -132,23 +132,23 @@ def force_startup():
                     startup_script
                 ], capture_output=True, text=True, timeout=1800)  # 30 minute timeout
                 
-                logger.info(f"🔧 Startup script execution completed with return code: {result.returncode}")
-                logger.info(f"🔧 Startup script stdout: {result.stdout}")
-                logger.info(f"🔧 Startup script stderr: {result.stderr}")
+                logger.info(f"Startup script execution completed with return code: {result.returncode}")
+                logger.info(f"Startup script stdout: {result.stdout}")
+                logger.info(f"Startup script stderr: {result.stderr}")
                 
                 if result.returncode == 0:
-                    logger.info("✅ Data setup completed successfully")
+                    logger.info("Data setup completed successfully")
                     logger.info(f"Startup output: {result.stdout}")
                 else:
-                    logger.warning(f"⚠️  Data setup had issues: {result.stderr}")
+                    logger.warning(f"Data setup had issues: {result.stderr}")
                     
             except Exception as script_error:
-                logger.error(f"❌ Error executing startup script: {script_error}")
-                logger.error(f"❌ Script path: {startup_script}")
-                logger.error(f"❌ Python executable: {sys.executable}")
+                logger.error(f"Error executing startup script: {script_error}")
+                logger.error(f"Script path: {startup_script}")
+                logger.error(f"Python executable: {sys.executable}")
                 
     except Exception as e:
-        logger.error(f"❌ Force startup failed: {e}")
+        logger.error(f"Force startup failed: {e}")
 
 # Execute startup immediately
 force_startup()
@@ -159,22 +159,22 @@ async def startup_event():
     try:
         logger.info("Loading GloVe embeddings...")
         embeddings.load_embeddings()
-        logger.info("✅ GloVe embeddings loaded successfully")
+        logger.info("GloVe embeddings loaded successfully")
         
         logger.info("Loading dataset...")
         data_loader.load_dataset()
-        logger.info("✅ Dataset loaded successfully")
+        logger.info("Dataset loaded successfully")
         
         logger.info("Initializing model trainer...")
         # Model trainer will load existing models if available
-        logger.info("✅ Model trainer initialized")
+        logger.info("Model trainer initialized")
         
         # Load trained models
         global trained_models
         trained_models = load_trained_models()
         
     except Exception as e:
-        logger.error(f"❌ Startup failed: {e}")
+        logger.error(f"Startup failed: {e}")
 
 @app.get("/")
 async def root():
@@ -231,9 +231,9 @@ async def health_check():
             "dataset_loaded": data_loader.loaded if hasattr(data_loader, 'loaded') else False,
             "data_splits": dataset_info.get('splits', {}),
             "system_status": {
-                "embeddings": "✅ Loaded" if embeddings.loaded else "❌ Missing",
-                "dataset": "✅ Loaded" if hasattr(data_loader, 'loaded') and data_loader.loaded else "❌ Missing",
-                "models": f"✅ {len(trained_models)} models" if trained_models else "❌ No models"
+                "embeddings": "Loaded" if embeddings.loaded else "Missing",
+                "dataset": "Loaded" if hasattr(data_loader, 'loaded') and data_loader.loaded else "Missing",
+                "models": f"{len(trained_models)} models" if trained_models else "No models"
             }
         }
     )
@@ -800,8 +800,8 @@ async def get_system_status():
         real_data={
             "dataset_utterances": dataset_info.get('total_utterances', 0),
             "models_count": len(trained_models),
-            "embeddings_status": "✅ Loaded" if embeddings.loaded else "❌ Missing",
-            "dataset_status": "✅ Loaded" if hasattr(data_loader, 'loaded') and data_loader.loaded else "❌ Missing"
+            "embeddings_status": "Loaded" if embeddings.loaded else "Missing",
+            "dataset_status": "Loaded" if hasattr(data_loader, 'loaded') and data_loader.loaded else "Missing"
         }
     )
 
@@ -824,10 +824,10 @@ def load_cached_news():
             # Check if cache is still valid
             cached_time = datetime.fromisoformat(cache_data.get('cached_at', '2000-01-01T00:00:00'))
             if datetime.now() - cached_time < NEWS_CACHE_DURATION:
-                logger.info("✅ Using cached news data")
+                logger.info("Using cached news data")
                 return cache_data.get('articles', [])
         
-        logger.info("❌ No valid cache found, will fetch fresh news")
+        logger.info("No valid cache found, will fetch fresh news")
         return None
     except Exception as e:
         logger.error(f"Failed to load cached news: {e}")
@@ -845,7 +845,7 @@ def save_news_cache(articles):
         with open(NEWS_CACHE_FILE, 'w', encoding='utf-8') as f:
             json.dump(cache_data, f, indent=2, ensure_ascii=False)
         
-        logger.info(f"✅ News cache saved with {len(articles)} articles")
+        logger.info(f"News cache saved with {len(articles)} articles")
     except Exception as e:
         logger.error(f"Failed to save news cache: {e}")
 
