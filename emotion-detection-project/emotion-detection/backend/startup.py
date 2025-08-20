@@ -282,6 +282,9 @@ class DataFileManager:
             else:
                 logger.error("Failed to download GloVe vectors from all sources")
                 return False
+            
+            # Re-check files after download to get updated status
+            existing_files = self.check_files_exist()
         
         # Always attempt extraction if zip exists (regardless of whether extracted file exists)
         # This ensures we don't have corrupted or incomplete extractions
