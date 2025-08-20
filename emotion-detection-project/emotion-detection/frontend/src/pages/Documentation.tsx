@@ -610,7 +610,7 @@ GET /api/models/training/progress`}
 
             {/* Team Members Grid */}
             <div className="grid lg:grid-cols-2 gap-8">
-              {teamMembers.map((member, index) => (
+              {teamMembers.map((member) => (
                 <div key={member.studentId} className="bg-slate-800/50 rounded-2xl p-8 border border-slate-600/30 backdrop-blur-xl hover:shadow-2xl transition-all duration-300">
                   <div className="flex items-start justify-between mb-6">
                     <div>
@@ -626,9 +626,9 @@ GET /api/models/training/progress`}
                   <div className="mb-6">
                     <h4 className="text-lg font-semibold text-white mb-3">Expertise</h4>
                     <div className="flex flex-wrap gap-2">
-                      {member.expertise.map((skill, skillIndex) => (
+                      {member.expertise.map((skill, index) => (
                         <span
-                          key={skillIndex}
+                          key={index}
                           className="px-3 py-1 bg-slate-700/50 text-slate-300 text-sm rounded-full border border-slate-600/30"
                         >
                           {skill}
