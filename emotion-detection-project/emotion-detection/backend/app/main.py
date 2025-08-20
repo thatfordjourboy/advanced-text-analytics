@@ -213,6 +213,9 @@ async def test_raw_endpoint(request: Request):
 @app.get("/health")
 async def health_check():
     """Health check endpoint with balanced metrics info"""
+    # Get real dataset info
+    dataset_info = data_loader.get_dataset_info() if hasattr(data_loader, 'get_dataset_info') else {}
+    
     return HealthResponse(
         status="healthy",
         timestamp=datetime.now().isoformat(),
@@ -220,10 +223,18 @@ async def health_check():
         uptime=0.0,
         details={
             "embeddings_loaded": embeddings.loaded,
-            "models_available": True,
-            "evaluation_approach": "Balanced metrics (F1-score, precision, recall) prioritized over accuracy due to severe class imbalance (491:1 ratio)",
-            "emotion_classes": 7,
-            "dataset_samples": 102979
+            "models_available": len(trained_models) > 0,
+            "models_loaded": len(trained_models),
+            "evaluation_approach": "Balanced metrics (F1-score, precision, recall) prioritized over accuracy due to severe class imbalance",
+            "emotion_classes": len(data_loader.emotion_categories) if hasattr(data_loader, 'emotion_categories') else 0,
+            "dataset_samples": dataset_info.get('total_utterances', 0),
+            "dataset_loaded": data_loader.loaded if hasattr(data_loader, 'loaded') else False,
+            "data_splits": dataset_info.get('splits', {}),
+            "system_status": {
+                "embeddings": "✅ Loaded" if embeddings.loaded else "❌ Missing",
+                "dataset": "✅ Loaded" if hasattr(data_loader, 'loaded') and data_loader.loaded else "❌ Missing",
+                "models": f"✅ {len(trained_models)} models" if trained_models else "❌ No models"
+            }
         }
     )
 
@@ -677,33 +688,58 @@ async def train_model():
 async def get_dataset_info():
     """Get dataset information with balanced metrics disclaimer"""
     try:
+        # Get real dataset info
+        dataset_info = data_loader.get_dataset_info()
+        
+        if not dataset_info or dataset_info.get('total_utterances', 0) == 0:
+            return {
+                "name": "ConvLab Emotion Detection Dataset",
+                "status": "Dataset not loaded or failed to load",
+                "error": "Dataset information unavailable",
+                "loaded": False
+            }
+        
+        # Calculate real emotion distribution from loaded data
+        emotion_counts = {}
+        if hasattr(data_loader, 'train_data') and data_loader.train_data is not None:
+            for item in data_loader.train_data:
+                emotion = item.get('emotion', 'unknown')
+                emotion_counts[emotion] = emotion_counts.get(emotion, 0) + 1
+        
+        # Calculate class imbalance
+        total_samples = dataset_info['total_utterances']
+        if emotion_counts:
+            max_count = max(emotion_counts.values())
+            min_count = min(emotion_counts.values())
+            imbalance_ratio = f"{max_count}:{min_count}" if min_count > 0 else "Unknown"
+            most_frequent = max(emotion_counts, key=emotion_counts.get)
+            least_frequent = min(emotion_counts, key=emotion_counts.get)
+        else:
+            imbalance_ratio = "Unknown"
+            most_frequent = "Unknown"
+            least_frequent = "Unknown"
+        
         return {
             "name": "ConvLab Emotion Detection Dataset",
-            "total_samples": 102979,
-            "train_samples": 82383,
-            "validation_samples": 10298,
-            "test_samples": 10298,
-            "emotion_distribution": {
-                "no emotion": 85572,
-                "happiness": 12885,
-                "surprise": 1823,
-                "sadness": 1150,
-                "anger": 1022,
-                "disgust": 353,
-                "fear": 174
-            },
+            "total_samples": dataset_info['total_utterances'],
+            "train_samples": dataset_info['splits'].get('train', 0),
+            "validation_samples": dataset_info['splits'].get('validation', 0),
+            "test_samples": dataset_info['splits'].get('test', 0),
+            "emotion_distribution": emotion_counts,
+            "emotions_found": dataset_info['emotions'],
             "class_imbalance": {
-                "imbalance_ratio": "491:1",
-                "severity": "SEVERE",
-                "most_frequent": "no emotion (83.1%)",
-                "least_frequent": "fear (0.2%)"
+                "imbalance_ratio": imbalance_ratio,
+                "severity": "SEVERE" if imbalance_ratio != "Unknown" and int(imbalance_ratio.split(':')[0]) > 100 else "MODERATE",
+                "most_frequent": most_frequent,
+                "least_frequent": least_frequent
             },
             "evaluation_approach": {
                 "primary_metrics": ["F1-score (macro)", "Precision (macro)", "Recall (macro)"],
                 "secondary_metrics": ["Accuracy", "ROC AUC (macro)"],
                 "rationale": "Macro-averaged metrics provide equal weight to each emotion class, making them more suitable for imbalanced datasets than accuracy alone."
             },
-            "loaded": True,
+            "loaded": dataset_info['status'] == "Loaded successfully",
+            "status": dataset_info['status'],
             "disclaimer": "Due to severe class imbalance, we prioritize balanced metrics (F1-score, precision, recall) over accuracy for model evaluation. This ensures fair assessment across all emotion classes."
         }
     except Exception as e:
@@ -732,10 +768,11 @@ async def get_evaluation_approach():
                 }
             },
             "dataset_context": {
-                "imbalance_ratio": "491:1 (no emotion vs fear)",
-                "total_samples": 102979,
-                "emotion_classes": 7,
-                "challenge": "Severe imbalance makes traditional accuracy misleading"
+                "imbalance_ratio": "Dynamic - calculated from loaded dataset",
+                "total_samples": "Dynamic - calculated from loaded dataset",
+                "emotion_classes": len(data_loader.emotion_categories) if hasattr(data_loader, 'emotion_categories') else 0,
+                "challenge": "Severe imbalance makes traditional accuracy misleading",
+                "real_data": "This endpoint now shows real-time dataset information"
             },
             "academic_benefits": [
                 "Fair evaluation across all emotion classes",
@@ -751,12 +788,21 @@ async def get_evaluation_approach():
 @app.get("/system/status")
 async def get_system_status():
     """Get overall system status"""
+    # Get real dataset info
+    dataset_info = data_loader.get_dataset_info() if hasattr(data_loader, 'get_dataset_info') else {}
+    
     return SystemStatus(
-        status="healthy" if embeddings.loaded else "degraded",
-        models_loaded=True,
-        dataset_loaded=True,
+        status="healthy" if embeddings.loaded and data_loader.loaded else "degraded",
+        models_loaded=len(trained_models) > 0,
+        dataset_loaded=data_loader.loaded if hasattr(data_loader, 'loaded') else False,
         embeddings_loaded=embeddings.loaded,
-        last_check=datetime.now().isoformat()
+        last_check=datetime.now().isoformat(),
+        real_data={
+            "dataset_utterances": dataset_info.get('total_utterances', 0),
+            "models_count": len(trained_models),
+            "embeddings_status": "✅ Loaded" if embeddings.loaded else "❌ Missing",
+            "dataset_status": "✅ Loaded" if hasattr(data_loader, 'loaded') and data_loader.loaded else "❌ Missing"
+        }
     )
 
 # News caching system

@@ -157,7 +157,43 @@ class DataLoader:
             
         except Exception as e:
             logger.error(f"Failed to load emotions from dataset: {e}")
-            raise ValueError("Cannot proceed without loading emotions from ConvLab dataset")
+            raise
+    
+    def get_dataset_info(self):
+        """Get real-time dataset information."""
+        try:
+            if not self.loaded:
+                return {
+                    "total_utterances": 0,
+                    "splits": {},
+                    "emotions": [],
+                    "status": "Not loaded"
+                }
+            
+            # Get real data counts
+            train_count = len([item for item in self.train_data]) if hasattr(self, 'train_data') and self.train_data is not None else 0
+            val_count = len([item for item in self.val_data]) if hasattr(self, 'val_data') and self.val_data is not None else 0
+            test_count = len([item for item in self.test_data]) if hasattr(self, 'test_data') and self.test_data is not None else 0
+            
+            return {
+                "total_utterances": train_count + val_count + test_count,
+                "splits": {
+                    "train": train_count,
+                    "validation": val_count,
+                    "test": test_count
+                },
+                "emotions": list(self.emotion_mapping.keys()) if hasattr(self, 'emotion_mapping') else [],
+                "emotion_mapping": self.emotion_mapping if hasattr(self, 'emotion_mapping') else {},
+                "status": "Loaded successfully"
+            }
+        except Exception as e:
+            logger.error(f"Failed to get dataset info: {e}")
+            return {
+                "total_utterances": 0,
+                "splits": {},
+                "emotions": [],
+                "status": f"Error: {str(e)}"
+            }
 
     def _create_proper_splits(self, df):
         """Create proper train/validation/test splits from the complete dataset."""
@@ -299,4 +335,4 @@ class DataLoader:
     @property
     def emotion_categories(self):
         """Get list of emotion category names."""
-        return list(self.emotion_mapping.keys())
+        return list(self.emotion_mapping.keys()) if hasattr(self, 'emotion_mapping') else []

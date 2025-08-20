@@ -98,6 +98,7 @@ class SystemStatus(BaseModel):
     dataset_loaded: bool = Field(..., description="Whether dataset is loaded")
     embeddings_loaded: bool = Field(..., description="Whether GloVe embeddings are loaded")
     last_check: str = Field(..., description="Last status check (ISO format)")
+    real_data: Optional[Dict[str, Any]] = Field(default=None, description="Real-time system data and status")
 
 class HealthResponse(BaseModel):
     """Health check response."""
