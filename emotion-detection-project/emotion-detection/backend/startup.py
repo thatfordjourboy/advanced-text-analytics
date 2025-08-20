@@ -71,15 +71,23 @@ class DataFileManager:
     
     def check_files_exist(self) -> Dict[str, bool]:
         """Check which required files already exist."""
+        logger.info(f"Checking files in data directory: {self.data_dir}")
         existing_files = {}
         for filename in self.required_files:
             file_path = self.data_dir / filename
-            existing_files[filename] = file_path.exists()
-            if existing_files[filename]:
-                size_mb = file_path.stat().st_size / (1024 * 1024)
-                logger.info(f"{filename} exists ({size_mb:.1f}MB)")
+            exists = file_path.exists()
+            existing_files[filename] = exists
+            
+            if exists:
+                try:
+                    size_mb = file_path.stat().st_size / (1024 * 1024)
+                    logger.info(f"{filename} exists ({size_mb:.1f}MB) at {file_path}")
+                except Exception as e:
+                    logger.warning(f"{filename} exists but size check failed: {e}")
             else:
-                logger.info(f"{filename} missing")
+                logger.info(f"{filename} missing - expected at {file_path}")
+        
+        logger.info(f"File existence summary: {existing_files}")
         return existing_files
     
     def download_file(self, url: str, filename: str) -> bool:
@@ -121,12 +129,24 @@ class DataFileManager:
         """Extract GloVe vectors from zip file."""
         try:
             zip_path = self.data_dir / "glove.2024.wikigiga.100d.zip"
+            logger.info(f"Starting GloVe extraction process...")
+            logger.info(f"Zip file path: {zip_path}")
+            logger.info(f"Zip file exists: {zip_path.exists()}")
+            
             if not zip_path.exists():
                 logger.error("GloVe zip file not found")
                 return False
             
+            # Check zip file size before extraction
+            zip_size_mb = zip_path.stat().st_size / (1024 * 1024)
+            logger.info(f"Zip file size: {zip_size_mb:.1f}MB")
+            
             logger.info(f"Extracting GloVe vectors from: {zip_path}")
             logger.info(f"Extracting to directory: {self.data_dir}")
+            logger.info(f"Target directory exists: {self.data_dir.exists()}")
+            logger.info(f"Target directory contents before extraction:")
+            for item in self.data_dir.iterdir():
+                logger.info(f"  - {item.name}")
             
             # List contents of zip file first
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
@@ -150,9 +170,13 @@ class DataFileManager:
             
             # Verify extraction
             extracted_file = self.data_dir / "wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"
+            logger.info(f"Checking for extracted file: {extracted_file}")
+            logger.info(f"Extracted file exists: {extracted_file.exists()}")
+            
             if extracted_file.exists():
                 size_mb = extracted_file.stat().st_size / (1024 * 1024)
                 logger.info(f"GloVe vectors extracted successfully ({size_mb:.1f}MB)")
+                logger.info(f"Extraction verification: PASSED")
                 return True
             else:
                 logger.error("Extracted file not found after extraction")
@@ -160,6 +184,7 @@ class DataFileManager:
                 logger.error(f"Available files in {self.data_dir}:")
                 for item in self.data_dir.iterdir():
                     logger.error(f"  - {item.name}")
+                logger.error("Extraction verification: FAILED")
                 return False
                 
         except Exception as e:
@@ -233,7 +258,11 @@ class DataFileManager:
                 logger.error("Failed to download GloVe vectors from all sources")
                 return False
         
-        # Extract GloVe vectors if zip exists but extracted file doesn't
+                # Extract GloVe vectors if zip exists but extracted file doesn't
+        logger.info(f"Checking extraction condition:")
+        logger.info(f"  - GloVe zip exists: {existing_files['glove.2024.wikigiga.100d.zip']}")
+        logger.info(f"  - Extracted file exists: {existing_files['wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt']}")
+        
         if (existing_files["glove.2024.wikigiga.100d.zip"] and 
             not existing_files["wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"]):
             logger.info("GloVe zip exists but extracted file missing - extracting now...")
@@ -241,9 +270,16 @@ class DataFileManager:
             if not self.extract_glove_vectors():
                 logger.error("GloVe extraction failed!")
                 return False
-                          logger.info("GloVe extraction completed - re-checking files...")
+            logger.info("GloVe extraction completed - re-checking files...")
             # Re-check files after extraction
             existing_files = self.check_files_exist()
+        else:
+            logger.info("Extraction condition not met:")
+            if not existing_files["glove.2024.wikigiga.100d.zip"]:
+                logger.info("  - GloVe zip file is missing")
+            if existing_files["wiki_giga_2024_100_MFT20_vectors_seed_2024_alpha_0.75_eta_0.05_050_combined.txt"]:
+                logger.info("  - Extracted file already exists")
+            logger.info("Skipping extraction step")
         
         # Create sample files if missing
         if not existing_files["dialogues.json"] or not existing_files["ontology.json"]:
