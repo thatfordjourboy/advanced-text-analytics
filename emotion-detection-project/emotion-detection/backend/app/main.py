@@ -475,8 +475,50 @@ async def detect_emotion_multiline(request: TextInput):
 async def start_random_forest_training():
     """Start Random Forest training"""
     try:
-        # This would start the training process using your model_trainer
-        return {"message": "Random Forest training started", "status": "training", "model_type": "random_forest"}
+        # Check if data is ready
+        if not data_loader.loaded or not embeddings.loaded:
+            raise HTTPException(status_code=400, detail="Data not ready. Please ensure data and embeddings are loaded.")
+        
+        # Start training in background thread
+        import threading
+        
+        def train_rf():
+            try:
+                # Prepare training data
+                model_trainer.prepare_training_data(data_loader, embeddings, text_processor)
+                
+                # Get prepared data
+                X_train = model_trainer.X_train
+                y_train = model_trainer.y_train
+                X_val = model_trainer.X_val
+                y_val = model_trainer.y_val
+                
+                if X_train is None or y_train is None:
+                    raise ValueError("Training data not prepared properly")
+                
+                # Train the model
+                result = model_trainer.train_random_forest(X_train, y_train, X_val, y_val)
+                
+                # Save the trained model
+                if result['status'] == 'success':
+                    model_path = models_dir / "random_forest.pkl"
+                    joblib.dump(model_trainer.random_forest, model_path)
+                    logger.info(f"Random Forest model saved to {model_path}")
+                
+            except Exception as e:
+                logger.error(f"Random Forest training failed: {e}")
+        
+        # Start training in background
+        training_thread = threading.Thread(target=train_rf)
+        training_thread.daemon = True
+        training_thread.start()
+        
+        return {
+            "message": "Random Forest training started in background", 
+            "status": "training", 
+            "model_type": "random_forest",
+            "note": "Training is running in background. Check progress via /api/models/training/progress"
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
 
@@ -484,8 +526,50 @@ async def start_random_forest_training():
 async def start_logistic_regression_training():
     """Start Logistic Regression training"""
     try:
-        # This would start the training process using your model_trainer
-        return {"message": "Logistic Regression training started", "status": "training", "model_type": "logistic_regression"}
+        # Check if data is ready
+        if not data_loader.loaded or not embeddings.loaded:
+            raise HTTPException(status_code=400, detail="Data not ready. Please ensure data and embeddings are loaded.")
+        
+        # Start training in background thread
+        import threading
+        
+        def train_lr():
+            try:
+                # Prepare training data
+                model_trainer.prepare_training_data(data_loader, embeddings, text_processor)
+                
+                # Get prepared data
+                X_train = model_trainer.X_train
+                y_train = model_trainer.y_train
+                X_val = model_trainer.X_val
+                y_val = model_trainer.y_val
+                
+                if X_train is None or y_train is None:
+                    raise ValueError("Training data not prepared properly")
+                
+                # Train the model
+                result = model_trainer.train_logistic_regression(X_train, y_train, X_val, y_val)
+                
+                # Save the trained model
+                if result['status'] == 'success':
+                    model_path = models_dir / "logistic_regression.pkl"
+                    joblib.dump(model_trainer.logistic_regression, model_path)
+                    logger.info(f"Logistic Regression model saved to {model_path}")
+                
+            except Exception as e:
+                logger.error(f"Logistic Regression training failed: {e}")
+        
+        # Start training in background
+        training_thread = threading.Thread(target=train_lr)
+        training_thread.daemon = True
+        training_thread.start()
+        
+        return {
+            "message": "Logistic Regression training started in background", 
+            "status": "training", 
+            "model_type": "logistic_regression",
+            "note": "Training is running in background. Check progress via /api/models/training/progress"
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
 
@@ -493,21 +577,72 @@ async def start_logistic_regression_training():
 async def start_custom_training(model_type: str, parameters: Dict[str, Any]):
     """Start custom training with parameters"""
     try:
-        # This would start the training process using your model_trainer
-        return {"message": f"{model_type} training started", "status": "training", "model_type": model_type, "parameters": parameters}
+        if model_type not in ["logistic_regression", "random_forest"]:
+            raise HTTPException(status_code=400, detail="Invalid model type")
+        
+        # Check if data is ready
+        if not data_loader.loaded or not embeddings.loaded:
+            raise HTTPException(status_code=400, detail="Data not ready. Please ensure data and embeddings are loaded.")
+        
+        # Update model parameters if provided
+        if parameters and "parameters" in parameters:
+            if model_type == "logistic_regression":
+                model_trainer.lr_params.update(parameters["parameters"])
+            elif model_type == "random_forest":
+                model_trainer.rf_params.update(parameters["parameters"])
+        
+        # Start training with custom parameters
+        if model_type == "logistic_regression":
+            return await start_logistic_regression_training()
+        else:
+            return await start_random_forest_training()
+            
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Custom training failed: {str(e)}")
 
 @app.get("/api/models/training/progress")
 async def get_training_progress():
     """Get training progress"""
     try:
-        # This would get the actual training progress from your model_trainer
-        return {
-            "status": "idle",
-            "progress": 0,
-            "message": "No training in progress"
-        }
+        # Check if training is in progress
+        if hasattr(model_trainer, 'current_training') and model_trainer.current_training:
+            training_info = model_trainer.current_training
+            
+            return {
+                "status": "training",
+                "progress": training_info.get('progress', 0),
+                "message": training_info.get('message', 'Training in progress...'),
+                "model_type": training_info.get('model_type', 'unknown'),
+                "elapsed_time": training_info.get('elapsed_time', 0),
+                "current_epoch": training_info.get('current_epoch', 0),
+                "total_epochs": training_info.get('total_epochs', 1)
+            }
+        else:
+            # Check if we have recent training results
+            if hasattr(model_trainer, 'training_results') and model_trainer.training_results:
+                latest_result = None
+                latest_time = 0
+                
+                for model_type, result in model_trainer.training_results.items():
+                    if result.get('status') == 'success' and 'training_time' in result:
+                        if result['training_time'] > latest_time:
+                            latest_time = result['training_time']
+                            latest_result = result
+                
+                if latest_result:
+                    return {
+                        "status": "completed",
+                        "progress": 100,
+                        "message": f"Training completed successfully for {latest_result.get('model_type', 'model')}",
+                        "training_time": latest_result.get('training_time', 0),
+                        "metrics": latest_result.get('metrics', {})
+                    }
+            
+            return {
+                "status": "idle",
+                "progress": 0,
+                "message": "No training in progress"
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get training progress: {str(e)}")
 
@@ -557,8 +692,39 @@ async def get_data_status():
 async def start_data_preparation():
     """Start data preparation"""
     try:
-        # This would start the data preparation process
-        return {"message": "Data preparation started", "status": "in_progress"}
+        # Check if data is already loaded
+        if data_loader.loaded and embeddings.loaded:
+            return {
+                "message": "Data already prepared and ready", 
+                "status": "completed",
+                "note": "Data and embeddings are already loaded"
+            }
+        
+        # Start data preparation in background
+        import threading
+        
+        def prepare_data():
+            try:
+                logger.info("Starting data preparation...")
+                
+                # Prepare training data using model trainer
+                model_trainer.prepare_training_data(data_loader, embeddings, text_processor)
+                
+                logger.info("Data preparation completed successfully")
+                
+            except Exception as e:
+                logger.error(f"Data preparation failed: {e}")
+        
+        # Start preparation in background
+        prep_thread = threading.Thread(target=prepare_data)
+        prep_thread.daemon = True
+        prep_thread.start()
+        
+        return {
+            "message": "Data preparation started in background", 
+            "status": "in_progress",
+            "note": "Data preparation is running in background. Check status via /api/models/data/status"
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Data preparation failed: {str(e)}")
 
