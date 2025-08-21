@@ -469,11 +469,11 @@ class MultiLabelEmotionTrainer:
     def _evaluate_model(self, y_true: np.ndarray, y_pred: np.ndarray, 
                        y_pred_proba: np.ndarray, model_name: str) -> Dict[str, Any]:
         """
-        Evaluate model performance for single-label emotion classification.
+        Evaluate model performance for multi-label emotion classification.
         
         Args:
-            y_true: True labels (1D array)
-            y_pred: Predicted labels (1D array)
+            y_true: True labels (1D array for single-label, 2D for multi-label)
+            y_pred: Predicted labels (1D array for single-label, 2D for multi-label)
             y_pred_proba: Predicted probabilities (2D array)
             model_name: Name of the model
             
@@ -483,49 +483,82 @@ class MultiLabelEmotionTrainer:
         try:
             logger.info(f"Evaluating {model_name} - y_true shape: {y_true.shape}, y_pred shape: {y_pred.shape}, y_pred_proba shape: {y_pred_proba.shape}")
             
-            # Ensure we're working with 1D arrays for single-label classification
-            if len(y_true.shape) > 1:
-                y_true = y_true.flatten()
-            if len(y_pred.shape) > 1:
-                y_pred = y_pred.flatten()
+            # Handle both single-label and multi-label cases
+            is_multi_label = len(y_true.shape) > 1
             
-            # Calculate metrics for single-label classification
-            precision_macro = precision_score(y_true, y_pred, average='macro', zero_division=0)
-            recall_macro = recall_score(y_true, y_pred, average='macro', zero_division=0)
-            f1_macro = f1_score(y_true, y_pred, average='macro', zero_division=0)
-            
-            # Calculate per-class metrics
-            precision_per_class = precision_score(y_true, y_pred, average=None, zero_division=0)
-            recall_per_class = recall_score(y_true, y_pred, average=None, zero_division=0)
-            f1_per_class = f1_score(y_true, y_pred, average=None, zero_division=0)
-            
-            # Calculate ROC-AUC for single-label classification
-            roc_auc_scores = []
-            n_classes = y_pred_proba.shape[1] if len(y_pred_proba.shape) > 1 else 1
-            
-            for i in range(n_classes):
-                try:
-                    if len(np.unique(y_true)) > 1:
-                        # For single-label, use one-vs-rest approach
-                        if n_classes > 1:
-                            auc = roc_auc_score((y_true == i).astype(int), y_pred_proba[:, i])
+            if is_multi_label:
+                logger.info(f"Multi-label evaluation for {model_name}")
+                # Multi-label evaluation
+                precision_macro = precision_score(y_true, y_pred, average='macro', zero_division=0)
+                recall_macro = recall_score(y_true, y_pred, average='macro', zero_division=0)
+                f1_macro = f1_score(y_true, y_pred, average='macro', zero_division=0)
+                
+                # Calculate per-class metrics
+                precision_per_class = precision_score(y_true, y_pred, average=None, zero_division=0)
+                recall_per_class = recall_score(y_true, y_pred, average=None, zero_division=0)
+                f1_per_class = f1_score(y_true, y_pred, average=None, zero_division=0)
+                
+                # Calculate ROC-AUC for multi-label
+                roc_auc_scores = []
+                for i in range(y_true.shape[1]):
+                    try:
+                        if len(np.unique(y_true[:, i])) > 1:
+                            auc = roc_auc_score(y_true[:, i], y_pred_proba[:, i])
+                            roc_auc_scores.append(auc)
                         else:
-                            auc = roc_auc_score(y_true, y_pred_proba.flatten())
-                        roc_auc_scores.append(auc)
-                    else:
+                            roc_auc_scores.append(0.0)
+                    except Exception as e:
+                        logger.warning(f"ROC-AUC calculation failed for class {i}: {e}")
                         roc_auc_scores.append(0.0)
-                except Exception as e:
-                    logger.warning(f"ROC-AUC calculation failed for class {i}: {e}")
-                    roc_auc_scores.append(0.0)
-            
-            roc_auc_macro = np.mean(roc_auc_scores) if roc_auc_scores else 0.0
-            
-            # Overall accuracy
-            accuracy = accuracy_score(y_true, y_pred)
+                
+                roc_auc_macro = np.mean(roc_auc_scores) if roc_auc_scores else 0.0
+                
+                # Overall accuracy for multi-label
+                accuracy = accuracy_score(y_true, y_pred)
+                
+            else:
+                logger.info(f"Single-label evaluation for {model_name}")
+                # Single-label evaluation
+                precision_macro = precision_score(y_true, y_pred, average='macro', zero_division=0)
+                recall_macro = recall_score(y_true, y_pred, average='macro', zero_division=0)
+                f1_macro = f1_score(y_true, y_pred, average='macro', zero_division=0)
+                
+                # Calculate per-class metrics
+                precision_per_class = precision_score(y_true, y_pred, average=None, zero_division=0)
+                recall_per_class = recall_score(y_true, y_pred, average=None, zero_division=0)
+                f1_per_class = f1_score(y_true, y_pred, average=None, zero_division=0)
+                
+                # Calculate ROC-AUC for single-label
+                roc_auc_scores = []
+                n_classes = y_pred_proba.shape[1] if len(y_pred_proba.shape) > 1 else 1
+                
+                for i in range(n_classes):
+                    try:
+                        if len(np.unique(y_true)) > 1:
+                            # For single-label, use one-vs-rest approach
+                            if n_classes > 1:
+                                auc = roc_auc_score((y_true == i).astype(int), y_pred_proba[:, i])
+                            else:
+                                auc = roc_auc_score(y_true, y_pred_proba.flatten())
+                            roc_auc_scores.append(auc)
+                        else:
+                            roc_auc_scores.append(0.0)
+                    except Exception as e:
+                        logger.warning(f"ROC-AUC calculation failed for class {i}: {e}")
+                        roc_auc_scores.append(0.0)
+                
+                roc_auc_macro = np.mean(roc_auc_scores) if roc_auc_scores else 0.0
+                
+                # Overall accuracy for single-label
+                accuracy = accuracy_score(y_true, y_pred)
             
             # Get unique classes for reporting
-            unique_classes = np.unique(np.concatenate([y_true, y_pred]))
-            n_classes_actual = len(unique_classes)
+            if is_multi_label:
+                unique_classes = list(range(y_true.shape[1]))
+                n_classes_actual = y_true.shape[1]
+            else:
+                unique_classes = np.unique(np.concatenate([y_true, y_pred]))
+                n_classes_actual = len(unique_classes)
             
             logger.info(f"Evaluation completed - {n_classes_actual} classes, accuracy: {accuracy:.3f}, f1_macro: {f1_macro:.3f}")
             
@@ -537,11 +570,12 @@ class MultiLabelEmotionTrainer:
                 'roc_auc_macro': roc_auc_macro,
                 'accuracy': accuracy,
                 'n_classes': n_classes_actual,
+                'is_multi_label': is_multi_label,
                 'precision_per_class': precision_per_class.tolist() if hasattr(precision_per_class, 'tolist') else precision_per_class,
                 'recall_per_class': recall_per_class.tolist() if hasattr(recall_per_class, 'tolist') else recall_per_class,
                 'f1_per_class': f1_per_class.tolist() if hasattr(f1_per_class, 'tolist') else f1_per_class,
                 'roc_auc_per_class': roc_auc_scores,
-                'unique_classes': unique_classes.tolist() if hasattr(unique_classes, 'tolist') else unique_classes.tolist()
+                'unique_classes': unique_classes.tolist() if hasattr(unique_classes, 'tolist') else unique_classes
             }
             
             return self.evaluation_results[model_name]

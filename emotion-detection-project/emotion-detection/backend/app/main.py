@@ -6,6 +6,7 @@ import logging
 import time
 from datetime import datetime
 from typing import Dict, Any, List
+import numpy as np # Added for np.argmax
 
 # Import existing modules
 from app.core.text_processor import TextProcessor
@@ -246,7 +247,7 @@ async def health_check():
 # Emotion Detection Endpoints
 @app.post("/predict", response_model=EmotionPrediction)
 async def predict_emotion(request: TextInput):
-    """Predict emotion from text"""
+    """Predict MULTIPLE emotions from text using multi-label classification"""
     try:
         if not trained_models:
             raise HTTPException(status_code=503, detail="No trained models available")
@@ -278,11 +279,11 @@ async def predict_emotion(request: TextInput):
         model = trained_models[model_name]
         start_time = time.time()
         
-        # Get prediction probabilities
+        # MULTI-LABEL PREDICTION: Get prediction probabilities for ALL emotions
         probabilities = model.predict_proba(text_vector)[0]
         
-        # Get predicted class
-        predicted_class = model.predict(text_vector)[0]
+        # MULTI-LABEL: Get predicted classes (can be multiple emotions)
+        predicted_classes = model.predict(text_vector)[0]
         
         processing_time = time.time() - start_time
         
@@ -293,14 +294,15 @@ async def predict_emotion(request: TextInput):
             # Fallback emotion labels if not available
             emotion_labels = ["anger", "disgust", "fear", "happiness", "no emotion", "sadness", "surprise"]
         
-        # Create emotions dictionary
+        # MULTI-LABEL: Create emotions dictionary with ALL probabilities
         emotions = {}
         for i, label in enumerate(emotion_labels):
             if i < len(probabilities):
                 emotions[label] = float(probabilities[i])
         
-        # Get primary emotion
-        primary_emotion = emotion_labels[predicted_class] if predicted_class < len(emotion_labels) else "neutral"
+        # MULTI-LABEL: Get primary emotion (highest probability)
+        primary_emotion_idx = np.argmax(probabilities)
+        primary_emotion = emotion_labels[primary_emotion_idx] if primary_emotion_idx < len(emotion_labels) else "neutral"
         
         # Get confidence (max probability)
         confidence = float(max(probabilities)) if probabilities.size > 0 else 0.0
@@ -322,14 +324,20 @@ async def predict_emotion(request: TextInput):
             prediction_quality = 'high_confidence'
             quality_message = 'Prediction is confident and reliable'
         
-        # Filter low-confidence emotions (only show emotions above 30% confidence)
+        # MULTI-LABEL: Filter emotions above 20% confidence (lower threshold for multi-emotion)
         filtered_emotions = {}
         for emotion, prob in emotions.items():
-            if prob >= 0.3:  # Show emotions above 30% confidence
+            if prob >= 0.2:  # Show emotions above 20% confidence for multi-emotion
                 filtered_emotions[emotion] = prob
         
         # Sort emotions by confidence
         sorted_emotions = dict(sorted(filtered_emotions.items(), key=lambda x: x[1], reverse=True))
+        
+        # MULTI-LABEL: Ensure we show multiple emotions when appropriate
+        if len(sorted_emotions) < 2 and len(emotions) > 1:
+            # If only one emotion detected, show top 2-3 emotions
+            top_emotions = sorted(emotions.items(), key=lambda x: x[1], reverse=True)[:3]
+            sorted_emotions = {emotion: prob for emotion, prob in top_emotions if prob >= 0.15}
         
         return EmotionPrediction(
             text=request.text,
